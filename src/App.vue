@@ -6,7 +6,7 @@
           v-for="cellInfo in row"
           :key="cellInfo.id"
           :cellInfo="cellInfo"
-          @click="cellInfo.cellType = 4"
+          @click="dfs(cellInfo)"
         />
       </div>
     </div>
@@ -46,18 +46,49 @@ export default {
   },
   methods: {
     createBoard() {
+      var _cellKey = 0;
       for (let r = 0; r < BOARDROWS; r++) {
         let row = [];
         for (let c = 0; c < BOARDCOLS; c++) {
           row.push({
-            id: this.cellKey,
+            id: _cellKey,
             row: r,
             col: c,
             cellType: CellType.Free,
           });
+          _cellKey += 1;
         }
         this.board.push(row);
       }
+      this.cellKey = _cellKey;
+    },
+    getAdjIndex(row, col) {
+      return [
+        [row + 1, col],
+        [row - 1, col],
+        [row, col + 1],
+        [row, col - 1],
+      ];
+    },
+    dfs(cellInfo) {
+      setTimeout(() => {
+        cellInfo.cellType = CellType.Filled;
+        const adjValues = this.getAdjIndex(cellInfo.row, cellInfo.col);
+        for (let adjValue of adjValues) {
+          let [x, y] = adjValue;
+          if (0 <= x && x < BOARDROWS && 0 <= y && y < BOARDCOLS) {
+            // console.log(
+            //   `The clicked index is ${adjValue.row},${adjValue.col} and the adjacent values are ${adjValue}`
+            // );
+            const adjCellInfo = this.board[x][y];
+            if (adjCellInfo.cellType === CellType.Free) {
+              adjCellInfo.cellType = CellType.Filled;
+              console.log(adjCellInfo.row, adjCellInfo.col);
+              this.dfs(adjCellInfo);
+            }
+          }
+        }
+      }, 25);
     },
   },
 };
