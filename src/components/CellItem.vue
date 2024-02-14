@@ -7,7 +7,7 @@
 
 export default {
   name: "CellItem",
-  props: ["row", "col"],
+  props: ["row", "col", "val"],
   data() {
     return {};
   },
@@ -32,5 +32,9 @@ export default {
 
 .cell:hover {
   background-color: grey;
+}
+
+.cell-filled {
+  background-color: blue;
 }
 </style>
