@@ -6,9 +6,17 @@ const CellType = {
   Filled: 4,
 };
 
+const AlgoType = {
+  DFS: 0,
+  BFS: 1,
+  Djkistra: 2,
+  BellmanFord: 3,
+  AStar: 4,
+};
+
 // const CellFillType = {
 //   Free: 0,
 //   Filled: 1,
 // };
 
-export { CellType };
+export { CellType, AlgoType };
