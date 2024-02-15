@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="cell"
-    :style="getGridStyle"
-    :class="this.isCellFree() ? '' : 'cell-filled'"
-  ></div>
+  <div class="cell" :style="getGridStyle" :class="selectCellStyling()"></div>
 </template>
 <script>
 import { CellType } from "@/helper/constants";
@@ -31,6 +27,19 @@ export default {
     isCellFree() {
       return this.cellInfo.cellType === CellType.Free;
     },
+    selectCellStyling() {
+      if (this.cellInfo.cellType === CellType.Free) {
+        return "";
+      } else if (this.cellInfo.cellType === CellType.Start) {
+        return "cell-start";
+      } else if (this.cellInfo.cellType === CellType.End) {
+        return "cell-end";
+      } else if (this.cellInfo.cellType === CellType.Wall) {
+        return "cell-wall";
+      } else {
+        return "cell-filled";
+      }
+    },
   },
 };
 </script>
@@ -45,6 +54,10 @@ export default {
   background-color: grey;
 }
 
+.cell-wall {
+  background-color: black;
+}
+
 .cell-filled {
   /* background-color: blue; */
   border: 1px solid rgb(175, 216, 248);
@@ -56,6 +69,14 @@ export default {
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   animation-play-state: running;
+}
+
+.cell-start {
+  background-color: green;
+}
+
+.cell-end {
+  background-color: red;
 }
 
 @keyframes visitedAnimation {
