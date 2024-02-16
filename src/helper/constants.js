@@ -4,6 +4,7 @@ const CellType = {
   End: 2,
   Free: 3,
   Filled: 4,
+  Path: 5,
 };
 
 const AlgoType = {
