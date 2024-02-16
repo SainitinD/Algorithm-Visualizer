@@ -62,6 +62,7 @@ export default {
       path: [],
       isMouseDown: false,
       algoType: AlgoType.DFS,
+      didAlgoRun: false,
     };
   },
   mounted: function () {
@@ -94,43 +95,79 @@ export default {
       // [r, c] = END;
       // this.board[r][c].cellType = CellType.End;
     },
-    getAdjIndex(row, col) {
+    getAdjIndexes(row, col) {
       return [
-        [row + 1, col],
         [row - 1, col],
         [row, col + 1],
+        [row + 1, col],
         [row, col - 1],
       ];
     },
-    async dfs(cellInfo) {
-      // setTimeout(() => {
-      // cellInfo.cellType = CellType.Filled;
-      const adjValues = this.getAdjIndex(cellInfo.row, cellInfo.col);
-      for (let adjValue of adjValues) {
-        let [x, y] = adjValue;
-        if (0 <= x && x < BOARDROWS && 0 <= y && y < BOARDCOLS) {
-          // console.log(
-          //   `The clicked index is ${adjValue.row},${adjValue.col} and the adjacent values are ${adjValue}`
-          // );
-          const adjCellInfo = this.board[x][y];
-
-          if (adjCellInfo.cellType === CellType.End) {
-            console.log(`Found the End Node!!`);
-            console.log(this.path);
-            return true;
-          } else if (adjCellInfo.cellType === CellType.Free) {
-            adjCellInfo.cellType = CellType.Filled;
-            await this.sleep(25);
-            //console.log(adjCellInfo.row, adjCellInfo.col);
-            this.path.push([adjCellInfo.row, adjCellInfo.col]);
-            console.log(this.path);
-            if (this.dfs(adjCellInfo)) return true;
-            this.path.pop();
+    clearBoard() {
+      for (let r = 0; r < BOARDROWS; r++) {
+        for (let c = 0; c < BOARDCOLS; c++) {
+          if (
+            this.board[r][c].cellType !== CellType.Start &&
+            this.board[r][c] !== CellType.End
+          ) {
+            this.board[r][c].cellType = CellType.Free;
           }
         }
       }
-      // }, 25);
     },
+    async dfs(cellInfo) {
+      // Error checking. Don't wanna run dfs if user didn't ask for it
+      if (this.didAlgoRun == false) return false;
+
+      // Find the adjacent indices of the current cell
+      let adjIndexes = this.getAdjIndexes(cellInfo.row, cellInfo.col);
+
+      // Go through each cell and dfs
+      for (let [row, col] of adjIndexes) {
+        // logging for debugging
+        // console.log(
+        //   `The current cell is at ${row},${col} and its adjacent cells are ${adjIndexes}`
+        // );
+
+        // edge case checks
+        if (!(0 <= row && row < BOARDROWS && 0 <= col && col < BOARDCOLS))
+          continue;
+
+        // more edge case checks
+        const adjCell = this.board[row][col];
+        if (
+          adjCell.cellType === CellType.Wall ||
+          adjCell.cellType === CellType.Start ||
+          adjCell.cellType === CellType.Filled
+        )
+          continue;
+
+        // return if we find the end node
+        if (adjCell.cellType === CellType.End) {
+          console.log("DFS: Found the end node!");
+          return true;
+        }
+
+        // Otherwise, label the cell as filled and wait for css to change
+        adjCell.cellType = CellType.Filled;
+        await this.sleep(1);
+
+        // perform the dfs
+        this.path.push([row, col]);
+        if (await this.dfs(adjCell)) return true;
+        this.path.pop();
+      }
+      return false;
+    },
+    async drawPath() {
+      if (this.path.length == 0) return;
+      for (let pathCell of this.path) {
+        let [r, c] = pathCell;
+        this.board[r][c].cellType = CellType.Path;
+        await this.sleep(1);
+      }
+    },
+
     modifyCellType(cellInfo) {
       if (
         this.isMouseDown &&
@@ -156,74 +193,24 @@ export default {
     async pathfind() {
       // ensure there is a path
       console.log("Starting the path finding!");
+      if (this.didAlgoRun) {
+        this.didAlgoRun = false;
+        this.clearBoard();
+        return;
+      }
 
+      this.didAlgoRun = true;
       if (await this.dfs(this.board[12][5])) {
         console.log("Successfully returned");
+        this.drawPath();
       } else {
         console.log("Path cannot be found!!");
       }
+      // this.drawPath();
     },
     sleep(milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds));
     },
-    // async dfs(cellInfo) {
-    //   const visited = this.board.map((row) => row.map(() => 0));
-
-    //   var cInfo;
-    //   // const stack = [];
-    //   // console.log(cellInfo);
-    //   const stack = [cellInfo];
-    //   while (stack.length != 0) {
-    //     cInfo = stack.pop();
-
-    //     if (cInfo.row == 12 && cInfo.col == 33) return true;
-    //     if (visited[cInfo.row][cInfo.col] == 1) continue;
-
-    //     visited[cInfo.row][cInfo.col] = 1;
-    //     this.board[cInfo.row][cInfo.col].cellType = CellType.Filled;
-    //     await this.sleep(25);
-
-    //     const adjValues = this.getAdjIndex(cInfo.row, cInfo.col);
-    //     for (let adjVal of adjValues) {
-    //       const [i, j] = adjVal;
-    //       if (!(0 <= i && i < BOARDROWS && 0 <= j && j < BOARDCOLS)) continue;
-    //       const adjInfo = this.board[adjVal[0]][adjVal[1]];
-    //       if (!visited[i][j]) stack.push(adjInfo);
-    //     }
-    //   }
-
-    //   //   // Get all adjacent vertices of the
-    //   //   // popped vertex s. If a adjacent has
-    //   //   // not been visited, then push it
-    //   //   // to the stack.
-    //   //   // for (let node = 0; node < this.adj[s].length; node++) {
-    //   //   //   if (!visited[this.adj[s][node]]) stack.push(this.adj[s][node]);
-    //   //   // }
-    //   // }
-    //   // // const adjCellsIndices = this.getAdjIndex(cellInfo.row, cellInfo.col);
-    //   // // for (let adjCellIndex of adjCellsIndices) {
-    //   // //   const [i, j] = adjCellIndex;
-    //   // //   if (i == 12 && j == 33) {
-    //   // //     console.log("Found End Node!");
-    //   // //     return true;
-    //   // //   }
-    //   // //   if (
-    //   // //     0 <= i &&
-    //   // //     i < BOARDROWS &&
-    //   // //     0 <= j &&
-    //   // //     j < BOARDCOLS &&
-    //   // //     this.board[i][j].cellType == CellType.Free
-    //   // //   ) {
-    //   // //     setTimeout(() => {
-    //   // //       this.board[i][j].cellType = CellType.Filled;
-    //   // //       this.path.push(adjCellIndex);
-    //   // //       if (this.dfs(this.board[i][j])) return true;
-    //   // //       this.path.pop();
-    //   // //     }, 1);
-    //   // //   }
-    //   // // }
-    //   // return false;
-    // },
   },
 };
 </script>
@@ -237,6 +224,7 @@ export default {
 #board {
   display: grid;
   gap: 0px;
+  cursor: default;
 }
 
 .row {
