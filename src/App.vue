@@ -7,19 +7,24 @@
           v-for="cellInfo in row"
           :key="cellInfo.id"
           :cellInfo="cellInfo"
-          @click="this.modifyCellTypeClick(cellInfo)"
           @mousedown="
             this.isMouseDown = true;
+            // this.lastCellClicked = cellInfo;
+            this.cellTypeClicked = cellInfo.cellType;
+            this.lastVisitedCell = cellInfo;
             console.log('Mouse Down');
           "
           @mouseup="
             this.isMouseDown = false;
-            this.modifyCellTypeClick(cellInfo);
+            // this.lastCellClicked = cellInfo;
             console.log('Mouse Up');
           "
-          @mouseleave="this.modifyCellType(cellInfo)"
+          @mouseenter="this.handleMouseEnter(cellInfo)"
         />
       </div>
+      <!-- @mouseleave="this.handleMouseLeave(cellInfo)" -->
+      <!-- @click="this.modifyCellTypeClick(cellInfo)" -->
+      <!-- @mouseleave="this.handleMouseLeave(cellInfo)" -->
       <!-- @mouseleave="
             this.isMouseDown
               ? (cellInfo.cellType = CellType.Wall)
@@ -58,9 +63,10 @@ export default {
   data() {
     return {
       board: [],
-      cellKey: 0,
       path: [],
       isMouseDown: false,
+      cellTypeClicked: null,
+      lastVisitedCell: null,
       algoType: AlgoType.DFS,
       didAlgoRun: false,
     };
@@ -85,7 +91,6 @@ export default {
         }
         this.board.push(row);
       }
-      this.cellKey = _cellKey;
 
       this.board[12][5].cellType = CellType.Start;
       this.board[12][33].cellType = CellType.End;
@@ -167,7 +172,6 @@ export default {
         await this.sleep(1);
       }
     },
-
     modifyCellType(cellInfo) {
       if (
         this.isMouseDown &&
@@ -190,6 +194,29 @@ export default {
         cellInfo.cellType = CellType.Wall;
       }
     },
+    handleMouseEnter(cellInfo) {
+      if (!this.isMouseDown) return;
+
+      if (
+        this.cellTypeClicked == CellType.Start &&
+        cellInfo.cellType != CellType.End
+      ) {
+        cellInfo.cellType = CellType.Start;
+        this.lastVisitedCell = cellInfo;
+        console.log(`Start Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
+      } else if (
+        this.cellTypeClicked == CellType.End &&
+        cellInfo.cellType != CellType.Start
+      ) {
+        cellInfo.cellType = CellType.End;
+        this.lastVisitedCell = cellInfo;
+        console.log(`End Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
+      }
+    },
+    isNearStartOrEndNode(cellInfo) {
+      const adjIndexes = this.getAdjIndexes(cellInfo.row, cellInfo.col);
+      return adjIndexes.findIndex((x) => x[0] == 12 && x[1] == 33) >= 0;
+    },
     async pathfind() {
       // ensure there is a path
       console.log("Starting the path finding!");
@@ -210,6 +237,13 @@ export default {
     },
     sleep(milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds));
+    },
+  },
+  watch: {
+    lastVisitedCell: function (newVal, oldVal) {
+      if (oldVal == null) return;
+      if (newVal.cellType != oldVal.cellType) return;
+      oldVal.cellType = CellType.Free;
     },
   },
 };
