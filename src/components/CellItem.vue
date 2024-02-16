@@ -36,6 +36,8 @@ export default {
         return "cell-end";
       } else if (this.cellInfo.cellType === CellType.Wall) {
         return "cell-wall";
+      } else if (this.cellInfo.cellType === CellType.Path) {
+        return "cell-path";
       } else {
         return "cell-filled";
       }
@@ -69,6 +71,10 @@ export default {
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   animation-play-state: running;
+}
+
+.cell-path {
+  background-color: yellow;
 }
 
 .cell-start {
