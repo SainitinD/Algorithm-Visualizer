@@ -7,19 +7,9 @@
           v-for="cellInfo in row"
           :key="cellInfo.id"
           :cellInfo="cellInfo"
-          @mousedown="
-            this.isMouseDown = true;
-            // this.lastCellClicked = cellInfo;
-            this.cellTypeClicked = cellInfo.cellType;
-            this.lastVisitedCell = cellInfo;
-            console.log('Mouse Down');
-          "
-          @mouseup="
-            this.isMouseDown = false;
-            // this.lastCellClicked = cellInfo;
-            console.log('Mouse Up');
-          "
+          @mousedown="this.handleMouseDown(cellInfo)"
           @mouseenter="this.handleMouseEnter(cellInfo)"
+          @mouseup="this.handleMouseUp"
         />
       </div>
       <!-- @mouseleave="this.handleMouseLeave(cellInfo)" -->
@@ -69,6 +59,8 @@ export default {
       lastVisitedCell: null,
       algoType: AlgoType.DFS,
       didAlgoRun: false,
+      STARTINDEX: [12, 5],
+      ENDINDEX: [12, 33],
     };
   },
   mounted: function () {
@@ -91,8 +83,8 @@ export default {
         }
         this.board.push(row);
       }
-
-      this.board[12][5].cellType = CellType.Start;
+      this.board[this.STARTINDEX[0]][this.STARTINDEX[1]].cellType =
+        CellType.Start;
       this.board[12][33].cellType = CellType.End;
 
       // var [r, c] = START;
@@ -194,6 +186,13 @@ export default {
         cellInfo.cellType = CellType.Wall;
       }
     },
+    handleMouseDown(cellInfo) {
+      this.isMouseDown = true;
+      // this.lastCellClicked = cellInfo;
+      this.cellTypeClicked = cellInfo.cellType;
+      this.lastVisitedCell = cellInfo;
+      console.log("Mouse Down");
+    },
     handleMouseEnter(cellInfo) {
       if (!this.isMouseDown) return;
 
@@ -203,6 +202,7 @@ export default {
       ) {
         cellInfo.cellType = CellType.Start;
         this.lastVisitedCell = cellInfo;
+        this.STARTINDEX = [cellInfo.row, cellInfo.col];
         console.log(`Start Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
       } else if (
         this.cellTypeClicked == CellType.End &&
@@ -211,7 +211,22 @@ export default {
         cellInfo.cellType = CellType.End;
         this.lastVisitedCell = cellInfo;
         console.log(`End Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
+      } else if (
+        cellInfo.cellType != CellType.Start &&
+        cellInfo.cellType != CellType.End
+      ) {
+        if (cellInfo.cellType == CellType.Wall) {
+          cellInfo.cellType = CellType.Free;
+        } else {
+          cellInfo.cellType = CellType.Wall;
+        }
+      } else {
+        console.log("Nothing Here!");
       }
+    },
+    handleMouseUp() {
+      this.isMouseDown = false;
+      console.log("Mouse Up");
     },
     isNearStartOrEndNode(cellInfo) {
       const adjIndexes = this.getAdjIndexes(cellInfo.row, cellInfo.col);
@@ -227,7 +242,7 @@ export default {
       }
 
       this.didAlgoRun = true;
-      if (await this.dfs(this.board[12][5])) {
+      if (await this.dfs(this.board[this.STARTINDEX[0]][this.STARTINDEX[1]])) {
         console.log("Successfully returned");
         this.drawPath();
       } else {
