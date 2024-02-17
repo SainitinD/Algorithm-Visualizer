@@ -12,15 +12,6 @@
           @mouseup="this.handleMouseUp"
         />
       </div>
-      <!-- @mouseleave="this.handleMouseLeave(cellInfo)" -->
-      <!-- @click="this.modifyCellTypeClick(cellInfo)" -->
-      <!-- @mouseleave="this.handleMouseLeave(cellInfo)" -->
-      <!-- @mouseleave="
-            this.isMouseDown
-              ? (cellInfo.cellType = CellType.Wall)
-              : console.log('whoa!')
-          " -->
-      <!-- @click="dfs(this.board[12][5])" -->
     </div>
   </div>
 </template>
@@ -40,9 +31,6 @@ console.log(
 const BOARDROWS = 30;
 const BOARDCOLS = Math.round(windowWidth.value / 22);
 console.log(`No.of board rows are ${BOARDROWS}, and columns are ${BOARDCOLS}`);
-
-// const START = [15, 15];
-// const END = [15, 45];
 
 export default {
   name: "App",
@@ -64,7 +52,6 @@ export default {
     };
   },
   mounted: function () {
-    // createBoard();
     this.createBoard();
   },
   methods: {
@@ -164,31 +151,9 @@ export default {
         await this.sleep(1);
       }
     },
-    modifyCellType(cellInfo) {
-      if (
-        this.isMouseDown &&
-        cellInfo.cellType != CellType.Start &&
-        cellInfo.cellType != CellType.End
-      ) {
-        if (cellInfo.cellType == CellType.Wall) {
-          cellInfo.cellType = CellType.Free;
-        } else {
-          cellInfo.cellType = CellType.Wall;
-        }
-      } else {
-        console.log("Nothing Here!");
-      }
-    },
-    modifyCellTypeClick(cellInfo) {
-      if (cellInfo.cellType == CellType.Wall) {
-        cellInfo.cellType = CellType.Free;
-      } else {
-        cellInfo.cellType = CellType.Wall;
-      }
-    },
     handleMouseDown(cellInfo) {
       this.isMouseDown = true;
-      // this.lastCellClicked = cellInfo;
+      // record details on the cell clicked
       this.cellTypeClicked = cellInfo.cellType;
       this.lastVisitedCell = cellInfo;
       console.log("Mouse Down");
@@ -196,6 +161,7 @@ export default {
     handleMouseEnter(cellInfo) {
       if (!this.isMouseDown) return;
 
+      // functionality to draw the walls and move start and end nodes
       if (
         this.cellTypeClicked == CellType.Start &&
         cellInfo.cellType != CellType.End
@@ -229,12 +195,8 @@ export default {
       this.isMouseDown = false;
       console.log("Mouse Up");
     },
-    isNearStartOrEndNode(cellInfo) {
-      const adjIndexes = this.getAdjIndexes(cellInfo.row, cellInfo.col);
-      return adjIndexes.findIndex((x) => x[0] == 12 && x[1] == 33) >= 0;
-    },
     async pathfind() {
-      // ensure there is a path
+      // clear the board if previous pathfinding is displayed
       console.log("Starting the path finding!");
       if (this.didAlgoRun) {
         this.didAlgoRun = false;
@@ -242,6 +204,7 @@ export default {
         return;
       }
 
+      // perform the path finding
       this.didAlgoRun = true;
       if (await this.dfs(this.board[this.STARTINDEX[0]][this.STARTINDEX[1]])) {
         console.log("Successfully returned");
@@ -249,7 +212,6 @@ export default {
       } else {
         console.log("Path cannot be found!!");
       }
-      // this.drawPath();
     },
     sleep(milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds));
