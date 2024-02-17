@@ -91,8 +91,8 @@ export default {
       for (let r = 0; r < BOARDROWS; r++) {
         for (let c = 0; c < BOARDCOLS; c++) {
           if (
-            this.board[r][c].cellType !== CellType.Start &&
-            this.board[r][c] !== CellType.End
+            this.board[r][c].cellType != CellType.Start &&
+            this.board[r][c].cellType != CellType.End
           ) {
             this.board[r][c].cellType = CellType.Free;
           }
@@ -101,7 +101,7 @@ export default {
     },
     async dfs(cellInfo) {
       // Error checking. Don't wanna run dfs if user didn't ask for it
-      if (this.didAlgoRun == false) return false;
+      if (!this.didAlgoRun) return false;
 
       // Find the adjacent indices of the current cell
       let adjIndexes = this.getAdjIndexes(cellInfo.row, cellInfo.col);
@@ -112,6 +112,7 @@ export default {
         // console.log(
         //   `The current cell is at ${row},${col} and its adjacent cells are ${adjIndexes}`
         // );
+        if (!this.didAlgoRun) return false;
 
         // edge case checks
         if (!(0 <= row && row < BOARDROWS && 0 <= col && col < BOARDCOLS))
