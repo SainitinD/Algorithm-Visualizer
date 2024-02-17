@@ -85,7 +85,7 @@ export default {
       }
       this.board[this.STARTINDEX[0]][this.STARTINDEX[1]].cellType =
         CellType.Start;
-      this.board[12][33].cellType = CellType.End;
+      this.board[this.ENDINDEX[0]][this.ENDINDEX[1]].cellType = CellType.End;
 
       // var [r, c] = START;
       // this.board[r][c].cellType = CellType.Start;
@@ -210,6 +210,7 @@ export default {
       ) {
         cellInfo.cellType = CellType.End;
         this.lastVisitedCell = cellInfo;
+        this.ENDINDEX = [cellInfo.row, cellInfo.col];
         console.log(`End Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
       } else if (
         cellInfo.cellType != CellType.Start &&
