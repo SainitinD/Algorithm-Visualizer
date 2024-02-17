@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <MainHeader @click="this.pathfind()" />
+    <MainHeader @click="this.handleHeader()" />
     <div id="board" v-if="this.board.length !== 0">
       <div class="row" v-for="(row, rowIdx) in board" :key="rowIdx">
         <CellItem
@@ -55,6 +55,13 @@ export default {
     this.createBoard();
   },
   methods: {
+    async handleHeader() {
+      if (this.didAlgoRun) {
+        await this.clearBoard();
+      } else {
+        await this.pathfind(true);
+      }
+    },
     createBoard() {
       var _cellKey = 0;
       for (let r = 0; r < BOARDROWS; r++) {
@@ -87,7 +94,16 @@ export default {
         [row, col - 1],
       ];
     },
-    clearBoard() {
+    async clearBoard() {
+      this.didAlgoRun = false;
+      // if (this.path.length == 0) return;
+      // for (let pathCell of this.path) {
+      //   let [r, c] = pathCell;
+      //   this.board[r][c].cellType = CellType.Free;
+      // }
+      // this.path = [];
+
+      this.path = [];
       for (let r = 0; r < BOARDROWS; r++) {
         for (let c = 0; c < BOARDCOLS; c++) {
           if (
@@ -98,8 +114,9 @@ export default {
           }
         }
       }
+      // await this.sleep(1);
     },
-    async dfs(cellInfo) {
+    async dfs(cellInfo, includeAnimation) {
       // Error checking. Don't wanna run dfs if user didn't ask for it
       if (!this.didAlgoRun) return false;
 
@@ -123,7 +140,8 @@ export default {
         if (
           adjCell.cellType === CellType.Wall ||
           adjCell.cellType === CellType.Start ||
-          adjCell.cellType === CellType.Filled
+          adjCell.cellType === CellType.Filled ||
+          adjCell.cellType === CellType.FilledNoAnim
         )
           continue;
 
@@ -133,23 +151,27 @@ export default {
           return true;
         }
 
-        // Otherwise, label the cell as filled and wait for css to change
-        adjCell.cellType = CellType.Filled;
-        await this.sleep(1);
+        if (includeAnimation) {
+          // Otherwise, label the cell as filled and wait for css to change
+          adjCell.cellType = CellType.Filled;
+          await this.sleep(1);
+        } else {
+          adjCell.cellType = CellType.FilledNoAnim;
+        }
 
         // perform the dfs
         this.path.push([row, col]);
-        if (await this.dfs(adjCell)) return true;
+        if (await this.dfs(adjCell, includeAnimation)) return true;
         this.path.pop();
       }
       return false;
     },
-    async drawPath() {
+    async drawPath(includeAnimation) {
       if (this.path.length == 0) return;
       for (let pathCell of this.path) {
         let [r, c] = pathCell;
         this.board[r][c].cellType = CellType.Path;
-        await this.sleep(1);
+        if (includeAnimation) await this.sleep(1);
       }
     },
     handleMouseDown(cellInfo) {
@@ -159,7 +181,7 @@ export default {
       this.lastVisitedCell = cellInfo;
       console.log("Mouse Down");
     },
-    handleMouseEnter(cellInfo) {
+    async handleMouseEnter(cellInfo) {
       if (!this.isMouseDown) return;
 
       // functionality to draw the walls and move start and end nodes
@@ -170,6 +192,10 @@ export default {
         cellInfo.cellType = CellType.Start;
         this.lastVisitedCell = cellInfo;
         this.STARTINDEX = [cellInfo.row, cellInfo.col];
+        if (this.didAlgoRun) {
+          await this.clearBoard();
+          this.dfsWithoutAnim();
+        }
         console.log(`Start Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
       } else if (
         this.cellTypeClicked == CellType.End &&
@@ -178,6 +204,10 @@ export default {
         cellInfo.cellType = CellType.End;
         this.lastVisitedCell = cellInfo;
         this.ENDINDEX = [cellInfo.row, cellInfo.col];
+        if (this.didAlgoRun) {
+          await this.clearBoard();
+          this.dfsWithoutAnim();
+        }
         console.log(`End Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
       } else if (
         cellInfo.cellType != CellType.Start &&
@@ -196,20 +226,73 @@ export default {
       this.isMouseDown = false;
       console.log("Mouse Up");
     },
-    async pathfind() {
+    dfsWithoutAnim() {
+      const visited = [];
+      this.didAlgoRun = true;
+      const dfs = (cellInfo) => {
+        // Error checking. Don't wanna run dfs if user didn't ask for it
+        if (!this.didAlgoRun) return false;
+        // Find the adjacent indices of the current cell
+        let adjIndexes = this.getAdjIndexes(cellInfo.row, cellInfo.col);
+        // Go through each cell and dfs
+        for (let [row, col] of adjIndexes) {
+          // edge case checks
+          if (!this.didAlgoRun) return false;
+          if (!(0 <= row && row < BOARDROWS && 0 <= col && col < BOARDCOLS)) {
+            continue;
+          }
+
+          const adjCell = this.board[row][col];
+          if (
+            adjCell.cellType === CellType.Wall ||
+            adjCell.cellType === CellType.Start
+          )
+            continue;
+
+          if (
+            visited.findIndex(
+              (x) => x[0] == adjCell.row && x[1] == adjCell.col
+            ) !== -1
+          )
+            continue;
+
+          // return if we find the end node
+          if (adjCell.cellType === CellType.End) {
+            console.log("DFS: Found the end node!");
+            return true;
+          }
+          visited.push([adjCell.row, adjCell.col]);
+
+          // perform the dfs
+          this.path.push([row, col]);
+          if (dfs(adjCell)) return true;
+          this.path.pop();
+        }
+        return false;
+      };
+      dfs(this.board[this.STARTINDEX[0]][this.STARTINDEX[1]]);
+      this.drawPath();
+    },
+
+    async pathfind(includeAnimation) {
       // clear the board if previous pathfinding is displayed
       console.log("Starting the path finding!");
-      if (this.didAlgoRun) {
-        this.didAlgoRun = false;
-        this.clearBoard();
-        return;
-      }
+      // if (this.didAlgoRun) {
+      //   this.didAlgoRun = false;
+      //   this.clearBoard();
+      //   return;
+      // }
 
       // perform the path finding
       this.didAlgoRun = true;
-      if (await this.dfs(this.board[this.STARTINDEX[0]][this.STARTINDEX[1]])) {
+      if (
+        await this.dfs(
+          this.board[this.STARTINDEX[0]][this.STARTINDEX[1]],
+          includeAnimation
+        )
+      ) {
         console.log("Successfully returned");
-        this.drawPath();
+        await this.drawPath(includeAnimation);
       } else {
         console.log("Path cannot be found!!");
       }

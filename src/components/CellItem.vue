@@ -38,14 +38,19 @@ export default {
         return "cell-wall";
       } else if (this.cellInfo.cellType === CellType.Path) {
         return "cell-path";
-      } else {
+      } else if (this.cellInfo.cellType === CellType.Filled) {
         return "cell-filled";
+      } else if (this.cellInfo.cellType === CellType.FilledNoAnim) {
+        return "cell-filled-noAnim";
       }
     },
   },
 };
 </script>
 <style>
+.cell-filled-noAnim {
+  background-color: rgba(0, 190, 218, 0.75);
+}
 .cell {
   width: 20px;
   height: 20px;
