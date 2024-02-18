@@ -1,6 +1,6 @@
 <template>
   <header>
-    <div class="title">Algo Vis</div>
+    <div class="title">Algo Vis by Sai</div>
     <div class="row">
       <div class="dropdown" @click="this.handleAlgoDropdown">
         <div
@@ -104,9 +104,9 @@
           </li>
         </ul>
       </div>
-      <button class="visualize-btn">Visualize</button>
-      <button class="clear-walls-btn">Clear Walls</button>
-      <button class="clear-path-btn">Clear Path</button>
+      <button>Visualize</button>
+      <button class="clear-btn">Clear Walls</button>
+      <button class="clear-btn">Clear Path</button>
     </div>
   </header>
 </template>
@@ -148,10 +148,18 @@ export default {
 };
 </script>
 <style>
+.title {
+  font-size: 4rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.33em;
+}
 .row {
   display: flex;
   justify-content: center;
-  font-family: Helvetica, sans-serif;
+  gap: 1.5em;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -159,7 +167,7 @@ export default {
 .dropdown {
   min-width: 15em;
   position: relative;
-  margin: 2em;
+  /* margin: 2em; */
 }
 
 .dropdown * {
@@ -240,6 +248,25 @@ export default {
 }
 
 button {
-  width: 10vw;
+  background: #2a2f3b;
+  color: #fff;
+  border: 2px #2a2f3b solid;
+  border-radius: 0.5em;
+  padding: 1em;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 16px;
+}
+
+.clear-btn {
+  background-color: rgb(198, 1, 1);
+}
+
+button:hover {
+  background: #323741;
+}
+
+.clear-btn:hover {
+  background-color: rgb(228, 1, 1);
 }
 </style>
