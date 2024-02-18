@@ -3,15 +3,15 @@
     <div class="title">Algo Vis by Sai</div>
     <div class="header-row">
       <CustomDropDown
-        :changeOptions="changeOptions"
+        @changeOptions="changeAlgoOptions"
         :propVals="['DFS', 'BFS', 'Dijkstra', 'A*']"
       />
       <CustomDropDown
-        :changeOptions="changeOptions"
+        @changeOptions="changeWallOptions"
         :propVals="['Random Maze']"
       />
       <CustomDropDown
-        :changeOptions="changeOptions"
+        @changeOptions="changeSpeedOptions"
         :propVals="['Slow', 'Normal', 'Fast']"
       />
       <button>Visualize</button>
@@ -32,8 +32,14 @@ export default {
     return {};
   },
   methods: {
-    changeOptions: function (newOptions) {
-      this.emit("changeOptions", newOptions);
+    changeAlgoOptions: function (newVal) {
+      this.$emit("changeAlgoOptions", newVal);
+    },
+    changeWallOptions: function (newVal) {
+      this.$emit("changeWallOptions", newVal);
+    },
+    changeSpeedOptions: function (newVal) {
+      this.$emit("changeSpeedOptions", newVal);
     },
   },
 };

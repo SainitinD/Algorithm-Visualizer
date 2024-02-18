@@ -32,6 +32,13 @@ export default {
       this.dropdownOpen = !this.dropdownOpen;
     },
   },
+  watch: {
+    selectedVal: function (newVal, oldVal) {
+      if (newVal != oldVal) {
+        this.$emit("changeOptions", newVal);
+      }
+    },
+  },
 };
 </script>
 <style>
