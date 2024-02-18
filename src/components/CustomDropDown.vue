@@ -35,7 +35,7 @@ export default {
 </script>
 <style>
 .dropdown {
-  min-width: 15em;
+  min-width: 11em;
   position: relative;
   /* margin: 2em; */
 }
@@ -48,7 +48,8 @@ export default {
   background: #2a2f3b;
   color: #fff;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 10px;
   align-items: center;
   border: 2px #2a2f3b solid;
   border-radius: 0.5em;

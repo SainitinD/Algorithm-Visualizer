@@ -18,10 +18,11 @@ import CustomDropDown from "./CustomDropDown.vue";
 
 export default {
   name: "MainHeader",
+  components: { CustomDropDown },
   data() {
     return {};
   },
-  components: { CustomDropDown },
+  methods: {},
 };
 </script>
 <style>
@@ -51,17 +52,22 @@ button {
   cursor: pointer;
   transition: all 0.3s;
   font-size: 16px;
+  /* min-width: 11em; */
+  text-align: center;
 }
 
 .clear-btn {
   background-color: rgb(198, 1, 1);
+  border: 2px rgb(198, 1, 1) solid;
 }
 
 button:hover {
   background: #323741;
+  border: 2px #323741 solid;
 }
 
 .clear-btn:hover {
   background-color: rgb(228, 1, 1);
+  border: 2px rgb(228, 1, 1) solid;
 }
 </style>
