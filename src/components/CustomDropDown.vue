@@ -8,6 +8,7 @@
       <li
         v-for="(val, index) in this.propVals"
         @click="this.selectedVal = index"
+        :key="index"
         :class="this.selectedVal == index ? 'active' : ''"
       >
         {{ val }}
@@ -53,7 +54,7 @@ export default {
   align-items: center;
   border: 2px #2a2f3b solid;
   border-radius: 0.5em;
-  padding: 1em;
+  padding: 0.75em;
   cursor: pointer;
   transition: all 0.3s;
 }
@@ -100,7 +101,7 @@ export default {
 }
 
 .menu li {
-  padding: 0.7em 0.5em;
+  padding: 0.75em 0.5em;
   margin: 0.3em 0;
   border-radius: 0.5em;
   cursor: pointer;

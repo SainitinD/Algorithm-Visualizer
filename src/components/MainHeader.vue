@@ -1,10 +1,19 @@
 <template>
   <header>
     <div class="title">Algo Vis by Sai</div>
-    <div class="row">
-      <CustomDropDown :propVals="['DFS', 'BFS', 'Dijkstra', 'A*']" />
-      <CustomDropDown :propVals="['Random Maze']" />
-      <CustomDropDown :propVals="['Slow', 'Normal', 'Fast']" />
+    <div class="header-row">
+      <CustomDropDown
+        :changeOptions="changeOptions"
+        :propVals="['DFS', 'BFS', 'Dijkstra', 'A*']"
+      />
+      <CustomDropDown
+        :changeOptions="changeOptions"
+        :propVals="['Random Maze']"
+      />
+      <CustomDropDown
+        :changeOptions="changeOptions"
+        :propVals="['Slow', 'Normal', 'Fast']"
+      />
       <button>Visualize</button>
       <button class="clear-btn">Clear Walls</button>
       <button class="clear-btn">Clear Path</button>
@@ -22,12 +31,16 @@ export default {
   data() {
     return {};
   },
-  methods: {},
+  methods: {
+    changeOptions: function (newOptions) {
+      this.emit("changeOptions", newOptions);
+    },
+  },
 };
 </script>
 <style>
 .title {
-  font-size: 3.5rem;
+  font-size: 3.25rem;
   color: white;
   display: flex;
   align-items: center;
@@ -35,7 +48,7 @@ export default {
   margin: 0.33em;
 }
 
-.row {
+.header-row {
   display: flex;
   justify-content: center;
   gap: 1.5em;
@@ -48,11 +61,11 @@ button {
   color: #fff;
   border: 2px #2a2f3b solid;
   border-radius: 0.5em;
-  padding: 1em;
+  padding: 0.75em;
   cursor: pointer;
   transition: all 0.3s;
   font-size: 16px;
-  /* min-width: 11em; */
+  min-width: 11em;
   text-align: center;
 }
 
