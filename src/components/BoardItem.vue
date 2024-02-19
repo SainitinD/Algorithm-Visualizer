@@ -11,10 +11,14 @@
       />
     </div>
   </div>
+  <div class="stats">
+    No.of visited cells: {{ this.visited.length }} &nbsp; No.of path cells:
+    {{ this.path.length }}
+  </div>
 </template>
 <script>
 import CellItem from "./CellItem.vue";
-import { CellType } from "@/helper/Enums";
+import { CellType, WallType } from "@/helper/Enums";
 
 export default {
   name: "BoardItem",
@@ -39,6 +43,7 @@ export default {
     };
   },
   mounted: function () {
+    // Setup
     this.board = this.createBoard();
     const [startRow, startCol] = this.metaData.STARTCELL;
     const [endRow, endCol] = this.metaData.ENDCELL;
@@ -51,14 +56,27 @@ export default {
       if (newVal.cellType != oldVal.cellType) return;
       oldVal.cellType = CellType.FREE;
     },
+    "options.wallType": function (newVal, oldVal) {
+      if (newVal == oldVal) return;
+      if (newVal == WallType.NOMAZE) {
+        this.clearWalls();
+      } else if (newVal == WallType.RANDOMMAZE) {
+        this.createRandomMaze();
+      }
+    },
     didClearWalls: function () {
       console.log("Cleared all the walls");
       this.clearWalls();
     },
     didAlgoRun: async function (newVal) {
       if (newVal == true) {
-        const [row, col] = this.metaData.STARTCELL;
-        await this.bfs(this.board[row][col]);
+        const result = await this.bfs();
+        if (result) {
+          await this.tracePath();
+          // await this.traceShortestPath();
+        }
+      } else {
+        await this.clearVisitedCells();
       }
     },
   },
@@ -72,12 +90,27 @@ export default {
           row.push({
             row: r,
             col: c,
-            cellType: CellType.Free,
+            cellType: CellType.FREE,
           });
         }
         board.push(row);
       }
       return board;
+    },
+    async createRandomMaze() {
+      for (let r = 0; r < this.metaData.BOARDROWS; r++) {
+        for (let c = 0; c < this.metaData.BOARDCOLS; c++) {
+          if (
+            this.board[r][c].cellType != CellType.START &&
+            this.board[r][c].cellType != CellType.END
+          ) {
+            if (Math.random() > 0.7) {
+              this.board[r][c].cellType = CellType.WALL;
+              await this.sleep(1);
+            }
+          }
+        }
+      }
     },
     handleMouseDown(cellInfo) {
       // record details on the cell clicked
@@ -154,17 +187,35 @@ export default {
         }
       }
     },
+    async clearVisitedCells() {
+      for (const [r, c] of this.visited) {
+        this.board[r][c].cellType = CellType.FREE;
+        await this.sleep(0.001);
+      }
+      this.visited = [];
+    },
     sleep(milliseconds) {
+      /**
+       * A helper function to make the program sleep for a specified milliseconds.
+       * Used to allow for the animations to run while performing the path-finding searchs
+       * @param {number} milliseconds milliseconds you want to wait for
+       */
       return new Promise((resolve) => setTimeout(resolve, milliseconds));
     },
     getAdjIndexes(row, col) {
+      /**
+       * Calculcates the valid adjacent cells and returns them.
+       * A Valid adjacent cell is a cell that is in the board and isn't a start cell, wall cell or a filled cell.
+       * @param {number} row indicates the row index of a cell
+       * @param {number} col indicates the column index of a cell
+       */
+      const res = [];
       const offsets = [
         [-1, 0],
         [0, 1],
         [1, 0],
         [0, -1],
       ];
-      const res = [];
       for (const [dx, dy] of offsets) {
         if (
           0 <= row + dx &&
@@ -178,71 +229,104 @@ export default {
         }
       }
       return res;
-      // return [
-      //   [row - 1, col],
-      //   [row, col + 1],
-      //   [row + 1, col],
-      //   [row, col - 1],
-      // ];
     },
-    // async bfs(cellInfo) {
-    //   if (!this.didAlgoRun) return false;
-    //   const queue = [[cellInfo.row, cellInfo.col]];
-    //   while (queue.length > 0) {
-    //     // console.log(queue);
-    //     let [row, col] = queue.shift();
+    async bfs() {
+      /**
+       * Perform the bfs from the start cell to the end cell
+       */
 
-    //     // return if we find the end node
-    //     const adjCell = this.board[row][col];
-    //     if (adjCell.cellType === CellType.END) {
-    //       console.log("BFS: Found the end node!");
-    //       return true;
-    //     }
-    //     adjCell.cellType = CellType.FILLED;
-    //     await this.sleep(1);
-    //     this.visited.push([row, col]);
-    //     let adjIndexes = this.getAdjIndexes(cellInfo.row, cellInfo.col);
-    //     for (let adjIndex of adjIndexes) {
-    //       if (
-    //         !(
-    //           0 <= row &&
-    //           row < this.metaData.BOARDROWS &&
-    //           0 <= col &&
-    //           col < this.metaData.BOARDCOLS
-    //         )
-    //       ) {
-    //         continue;
-    //       }
-    //       const [adjRow, adjCol] = adjIndex;
-    //       const adjCell = this.board[adjRow][adjCol];
-    //       if (
-    //         adjCell.cellType === CellType.WALL ||
-    //         adjCell.cellType === CellType.START ||
-    //         adjCell.cellType === CellType.FILLEDNOANIM
-    //       )
-    //         continue;
-    //       this.path.push(adjIndex);
-    //       queue.push(adjIndex);
-    //     }
-    //   }
-    // },
-    async bfs(cellInfo) {
+      // setup
       this.visited = [];
-      const queue = [[cellInfo.row, cellInfo.col]];
+      const bfsHistory = [];
+      const queue = [[this.metaData.STARTCELL[0], this.metaData.STARTCELL[1]]];
+      console.log(queue);
+
+      // bf search
       while (queue.length > 0) {
         const [curRow, curCol] = queue.shift();
         for (const [adjRow, adjCol] of this.getAdjIndexes(curRow, curCol)) {
+          // when you find the end node
           if (this.board[adjRow][adjCol].cellType == CellType.END) {
+            // data variable tracking
+            this.visited.push([adjRow, adjCol]);
+
+            // calculcate shortest path
+            bfsHistory.push([
+              [adjRow, adjCol],
+              [curRow, curCol],
+            ]);
+            this.traceBFSShortestPath(bfsHistory);
             return true;
-          } else if (this.board[adjRow][adjCol].cellType != CellType.FILLED) {
-            queue.push([adjRow, adjCol]);
+
+            // Otherwise, continue the search
+          } else if (this.board[adjRow][adjCol].cellType == CellType.FREE) {
             this.board[adjRow][adjCol].cellType = CellType.FILLED;
+
+            // local variable tracking
+            queue.push([adjRow, adjCol]);
+            bfsHistory.push([
+              [adjRow, adjCol],
+              [curRow, curCol],
+            ]);
+
+            // data variable tracking
             this.visited.push([adjRow, adjCol]);
             await this.sleep(1);
           }
         }
       }
       return false;
+    },
+    traceBFSShortestPath(bfsHistory) {
+      /**
+       * Used to figure out the shortest path for bfs.
+       * Updates the this.path variable with the calculated shortest path
+       * @param {Array<Array, Array>} bfsHistory  Contains history of the bfs search. Each value contains the current cell and the adj cell from which it got visited
+       */
+      var curVal = null;
+      bfsHistory.reverse();
+      this.path = [];
+      for (const [adjIdx, curIdx] of bfsHistory) {
+        if (
+          curVal == null &&
+          adjIdx[0] == this.metaData.ENDCELL[0] &&
+          adjIdx[1] == this.metaData.ENDCELL[1]
+        ) {
+          curVal = curIdx;
+          this.path.push(curIdx);
+          const [r, c] = curVal;
+          // this.board[r][c].cellType = CellType.PATH;
+          // await this.sleep(150);
+          console.log(`Starting Path from end cell at [${r}, ${c}]`);
+        } else if (curVal[0] == adjIdx[0] && curVal[1] == adjIdx[1]) {
+          curVal = curIdx;
+          const [r, c] = curVal;
+          if (
+            r == this.metaData.STARTCELL[0] &&
+            c == this.metaData.STARTCELL[1]
+          ) {
+            console.log(`Found start cell at [${r}, ${c}]`);
+            return;
+          } else {
+            // this.board[r][c].cellType = CellType.PATH;
+            // await this.sleep(150);
+            this.path.push(curIdx);
+            console.log(
+              `Going from [${adjIdx[0]}, ${adjIdx[1]}] to [${r}, ${c}]`
+            );
+          }
+        }
+      }
+    },
+    async tracePath() {
+      /**
+       * Traces the shortest path from the information in 'path' data variable.
+       */
+      if (this.path.length == 0) return;
+      for (const [r, c] of this.path) {
+        this.board[r][c].cellType = CellType.PATH;
+        await this.sleep(150);
+      }
     },
   },
 };
@@ -253,7 +337,14 @@ export default {
   /* display: flex; */
   justify-content: center;
   cursor: default;
-  margin: 1.5em;
+  margin: 1.5em 1.5em 0em 1.5em;
+}
+
+.stats {
+  margin-top: 0.5em;
+  text-align: end;
+  color: rgb(255, 255, 255);
+  margin-right: 5em;
 }
 
 .row {
