@@ -17,7 +17,8 @@ import CellItem from "./CellItem.vue";
 import { CellType } from "@/helper/Enums";
 
 export default {
-  name: "Board",
+  name: "BoardItem",
+  props: ["options", "didAlgoRun", "didClearPath", "didClearWalls"],
   components: {
     CellItem,
   },
@@ -50,7 +51,18 @@ export default {
       if (newVal.cellType != oldVal.cellType) return;
       oldVal.cellType = CellType.FREE;
     },
+    didClearWalls: function () {
+      console.log("Cleared all the walls");
+      this.clearWalls();
+    },
+    didAlgoRun: async function (newVal) {
+      if (newVal == true) {
+        const [row, col] = this.metaData.STARTCELL;
+        await this.bfs(this.board[row][col]);
+      }
+    },
   },
+  // mixins: [bfs],
   methods: {
     createBoard() {
       const board = [];
@@ -86,7 +98,7 @@ export default {
         // move the start node if its moved to a valid cell
         cellInfo.cellType = CellType.START;
         this.metaData.lastClickedCell = cellInfo;
-        this.metaData.STARTINDEX = [cellInfo.row, cellInfo.col];
+        this.metaData.STARTCELL = [cellInfo.row, cellInfo.col];
 
         // debugging
         console.log(`Start Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
@@ -102,7 +114,7 @@ export default {
         // move the end node if its moved to a valid cell
         cellInfo.cellType = CellType.END;
         this.metaData.lastClickedCell = cellInfo;
-        this.metaData.ENDINDEX = [cellInfo.row, cellInfo.col];
+        this.metaData.ENDCELL = [cellInfo.row, cellInfo.col];
 
         // debugging
         console.log(`End Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
@@ -132,6 +144,105 @@ export default {
 
       // debugging
       console.log("Mouse Up");
+    },
+    clearWalls() {
+      for (let r = 0; r < this.metaData.BOARDROWS; r++) {
+        for (let c = 0; c < this.metaData.BOARDCOLS; c++) {
+          if (this.board[r][c].cellType != CellType.WALL) continue;
+          this.board[r][c].cellType = CellType.FREE;
+          // this.sleep(0.01);
+        }
+      }
+    },
+    sleep(milliseconds) {
+      return new Promise((resolve) => setTimeout(resolve, milliseconds));
+    },
+    getAdjIndexes(row, col) {
+      const offsets = [
+        [-1, 0],
+        [0, 1],
+        [1, 0],
+        [0, -1],
+      ];
+      const res = [];
+      for (const [dx, dy] of offsets) {
+        if (
+          0 <= row + dx &&
+          row + dx < this.metaData.BOARDROWS &&
+          0 <= col + dy &&
+          col + dy < this.metaData.BOARDCOLS &&
+          this.board[row + dx][col + dy].cellType != CellType.START &&
+          this.board[row + dx][col + dy].cellType != CellType.WALL
+        ) {
+          res.push([row + dx, col + dy]);
+        }
+      }
+      return res;
+      // return [
+      //   [row - 1, col],
+      //   [row, col + 1],
+      //   [row + 1, col],
+      //   [row, col - 1],
+      // ];
+    },
+    // async bfs(cellInfo) {
+    //   if (!this.didAlgoRun) return false;
+    //   const queue = [[cellInfo.row, cellInfo.col]];
+    //   while (queue.length > 0) {
+    //     // console.log(queue);
+    //     let [row, col] = queue.shift();
+
+    //     // return if we find the end node
+    //     const adjCell = this.board[row][col];
+    //     if (adjCell.cellType === CellType.END) {
+    //       console.log("BFS: Found the end node!");
+    //       return true;
+    //     }
+    //     adjCell.cellType = CellType.FILLED;
+    //     await this.sleep(1);
+    //     this.visited.push([row, col]);
+    //     let adjIndexes = this.getAdjIndexes(cellInfo.row, cellInfo.col);
+    //     for (let adjIndex of adjIndexes) {
+    //       if (
+    //         !(
+    //           0 <= row &&
+    //           row < this.metaData.BOARDROWS &&
+    //           0 <= col &&
+    //           col < this.metaData.BOARDCOLS
+    //         )
+    //       ) {
+    //         continue;
+    //       }
+    //       const [adjRow, adjCol] = adjIndex;
+    //       const adjCell = this.board[adjRow][adjCol];
+    //       if (
+    //         adjCell.cellType === CellType.WALL ||
+    //         adjCell.cellType === CellType.START ||
+    //         adjCell.cellType === CellType.FILLEDNOANIM
+    //       )
+    //         continue;
+    //       this.path.push(adjIndex);
+    //       queue.push(adjIndex);
+    //     }
+    //   }
+    // },
+    async bfs(cellInfo) {
+      this.visited = [];
+      const queue = [[cellInfo.row, cellInfo.col]];
+      while (queue.length > 0) {
+        const [curRow, curCol] = queue.shift();
+        for (const [adjRow, adjCol] of this.getAdjIndexes(curRow, curCol)) {
+          if (this.board[adjRow][adjCol].cellType == CellType.END) {
+            return true;
+          } else if (this.board[adjRow][adjCol].cellType != CellType.FILLED) {
+            queue.push([adjRow, adjCol]);
+            this.board[adjRow][adjCol].cellType = CellType.FILLED;
+            this.visited.push([adjRow, adjCol]);
+            await this.sleep(1);
+          }
+        }
+      }
+      return false;
     },
   },
 };
