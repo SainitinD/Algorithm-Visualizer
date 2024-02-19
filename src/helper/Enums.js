@@ -5,7 +5,8 @@ const SpeedType = {
 };
 
 const WallType = {
-  REGULAR: 0,
+  NOMAZE: 0,
+  RANDOMMAZE: 1,
 };
 
 const AlgoType = {
