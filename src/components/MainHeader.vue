@@ -8,15 +8,19 @@
       />
       <CustomDropDown
         @changeOptions="changeWallOptions"
-        :propVals="['Random Maze']"
+        :propVals="['No Maze', 'Random Maze']"
       />
       <CustomDropDown
         @changeOptions="changeSpeedOptions"
         :propVals="['Slow', 'Normal', 'Fast']"
       />
-      <button>Visualize</button>
-      <button class="clear-btn">Clear Walls</button>
-      <button class="clear-btn">Clear Path</button>
+      <button @click="this.$emit('toggleAlgoRun')">Visualize</button>
+      <button @click="this.$emit('toggleClearWalls')" class="clear-btn">
+        Clear Walls
+      </button>
+      <button @click="this.$emit('toggleClearPath')" class="clear-btn">
+        Clear Path
+      </button>
     </div>
   </header>
 </template>
