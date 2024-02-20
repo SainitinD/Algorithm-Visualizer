@@ -18,7 +18,7 @@
 </template>
 <script>
 import CellItem from "./CellItem.vue";
-import { CellType, WallType } from "@/helper/Enums";
+import { AlgoType, CellType, WallType } from "@/helper/Enums";
 
 export default {
   name: "BoardItem",
@@ -70,10 +70,21 @@ export default {
     },
     didAlgoRun: async function (newVal) {
       if (newVal == true) {
-        const result = await this.bfs();
+        var result = false;
+        if (this.options.algoType == AlgoType.DFS) {
+          // console.log("DFS Called but none implemented :(");
+          result = await this.dfs();
+        } else if (this.options.algoType == AlgoType.BFS) {
+          result = await this.bfs();
+        } else if (this.options.algoType == AlgoType.Djikstra) {
+          console.log("Djikstra Called but none implemented :(");
+        } else if (this.options.algoType == AlgoType.ASTAR) {
+          console.log("A* Called but none implemented :(");
+        }
+
         if (result) {
+          console.log("Tracing Shortest Path now!");
           await this.tracePath();
-          // await this.traceShortestPath();
         }
       } else {
         await this.clearVisitedCells();
@@ -189,10 +200,16 @@ export default {
     },
     async clearVisitedCells() {
       for (const [r, c] of this.visited) {
-        this.board[r][c].cellType = CellType.FREE;
-        await this.sleep(0.001);
+        if (
+          this.board[r][c].cellType == CellType.FILLED ||
+          this.board[r][c].cellType == CellType.PATH
+        ) {
+          this.board[r][c].cellType = CellType.FREE;
+          await this.sleep(0.001);
+        }
       }
       this.visited = [];
+      this.path = [];
     },
     sleep(milliseconds) {
       /**
@@ -247,9 +264,6 @@ export default {
         for (const [adjRow, adjCol] of this.getAdjIndexes(curRow, curCol)) {
           // when you find the end node
           if (this.board[adjRow][adjCol].cellType == CellType.END) {
-            // data variable tracking
-            this.visited.push([adjRow, adjCol]);
-
             // calculcate shortest path
             bfsHistory.push([
               [adjRow, adjCol],
@@ -318,11 +332,37 @@ export default {
         }
       }
     },
+    async dfs() {
+      const dfsHelper = async (curRow, curCol) => {
+        for (const [adjRow, adjCol] of this.getAdjIndexes(curRow, curCol)) {
+          if (this.board[adjRow][adjCol].cellType == CellType.END) return true;
+          else if (this.board[adjRow][adjCol].cellType == CellType.FREE) {
+            this.board[adjRow][adjCol].cellType = CellType.FILLED;
+            this.visited.push([adjRow, adjCol]);
+            this.path.push([adjRow, adjCol]);
+            await this.sleep(1);
+            if ((await dfsHelper(adjRow, adjCol)) == true) return true;
+            this.path.pop();
+          }
+        }
+        return false;
+      };
+      return await dfsHelper(
+        this.metaData.STARTCELL[0],
+        this.metaData.STARTCELL[1]
+      );
+    },
     async tracePath() {
       /**
        * Traces the shortest path from the information in 'path' data variable.
        */
       if (this.path.length == 0) return;
+      if (
+        this.path.length == 1 &&
+        this.path[0][0] == this.metaData.STARTCELL[0] &&
+        this.path[0][1] == this.metaData.STARTCELL[1]
+      )
+        return;
       for (const [r, c] of this.path) {
         this.board[r][c].cellType = CellType.PATH;
         await this.sleep(150);
