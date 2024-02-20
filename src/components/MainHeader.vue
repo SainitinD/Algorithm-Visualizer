@@ -1,26 +1,38 @@
 <template>
   <header>
-    <div class="title">Algo Vis by Sai</div>
+    <div class="title">Algorithm Visualizer</div>
     <div class="header-row">
       <CustomDropDown
         @changeOptions="changeAlgoOptions"
+        :didAlgoRun="didAlgoRun"
         :propVals="['DFS', 'BFS', 'Dijkstra', 'A*']"
       />
       <CustomDropDown
         @changeOptions="changeWallOptions"
+        :didAlgoRun="didAlgoRun"
         :propVals="['No Maze', 'Random Maze']"
       />
       <CustomDropDown
         @changeOptions="changeSpeedOptions"
+        :didAlgoRun="didAlgoRun"
         :propVals="['Slow', 'Normal', 'Fast']"
       />
-      <button @click="this.$emit('toggleAlgoRun')">Visualize</button>
+      <button v-if="didAlgoRun == false" @click="this.$emit('toggleAlgoRun')">
+        Visualize
+      </button>
+      <button
+        class="clear-btn"
+        v-if="didAlgoRun == true"
+        @click="this.$emit('clearPath')"
+      >
+        Clear
+      </button>
       <button @click="this.$emit('toggleClearWalls')" class="clear-btn">
         Clear Walls
       </button>
-      <button @click="this.$emit('toggleClearPath')" class="clear-btn">
+      <!-- <button @click="this.$emit('toggleClearPath')" class="clear-btn">
         Clear Path
-      </button>
+      </button> -->
     </div>
   </header>
 </template>
@@ -32,6 +44,7 @@ import CustomDropDown from "./CustomDropDown.vue";
 export default {
   name: "MainHeader",
   components: { CustomDropDown },
+  props: ["didAlgoRun"],
   data() {
     return {};
   },

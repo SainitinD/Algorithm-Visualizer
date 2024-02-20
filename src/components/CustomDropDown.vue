@@ -1,8 +1,21 @@
 <template>
   <div class="dropdown" @click="this.handleDropdown">
     <div class="select" :class="!this.dropdownOpen ? '' : 'select-clicked'">
-      <span class="selected">{{ this.vals[this.selectedVal] }}</span>
-      <div :class="!this.dropdownOpen ? 'caret' : 'caret-rotate'"></div>
+      <span
+        class="selected"
+        :class="{
+          'menu-disabled': this.didAlgoRun,
+          'menu-enabled': !this.didAlgoRun,
+        }"
+        >{{ this.vals[this.selectedVal] }}</span
+      >
+      <div
+        :class="{
+          'caret-rotate': this.dropdownOpen,
+          caret: !this.dropdownOpen,
+          'menu-disabled': this.didAlgoRun,
+        }"
+      ></div>
     </div>
     <ul class="menu" :class="!this.dropdownOpen ? '' : 'menu-open'">
       <li
@@ -19,7 +32,7 @@
 <script>
 export default {
   name: "CustomDropDown",
-  props: ["propVals"],
+  props: ["propVals", "didAlgoRun"],
   data() {
     return {
       dropdownOpen: false,
@@ -29,13 +42,20 @@ export default {
   },
   methods: {
     handleDropdown() {
-      this.dropdownOpen = !this.dropdownOpen;
+      if (!this.didAlgoRun) {
+        this.dropdownOpen = !this.dropdownOpen;
+      }
     },
   },
   watch: {
     selectedVal: function (newVal, oldVal) {
       if (newVal != oldVal) {
         this.$emit("changeOptions", newVal);
+      }
+    },
+    didAlgoRun: function (newVal) {
+      if (newVal) {
+        this.dropdownOpen = false;
       }
     },
   },
@@ -125,5 +145,15 @@ export default {
 .menu-open {
   display: block;
   opacity: 1;
+}
+
+.menu-disabled {
+  opacity: 30%;
+  transition: 0.5s;
+}
+
+.menu-enabled {
+  opacity: 100%;
+  transition: 0.5s;
 }
 </style>
