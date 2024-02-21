@@ -11,9 +11,20 @@
       />
     </div>
   </div>
-  <div class="stats">
-    No.of visited cells: {{ this.visited.length }} &nbsp; No.of path cells:
-    {{ this.path.length }}
+  <div id="stats">
+    <!-- v-if="
+        this.metaData.isMouseDown &&
+        (this.metaData.cellTypeClicked == 0 ||
+          this.metaData.cellTypeClicked == 1)
+      " -->
+    <p id="hint-text">
+      * Click somewhere to place the
+      {{ this.metaData.cellTypeClicked == 0 ? "START" : "END" }} cell!
+    </p>
+    <p id="stats-text">
+      No.of visited cells: {{ this.visited.length }} &nbsp; No.of path cells:
+      {{ this.path.length }}
+    </p>
   </div>
 </template>
 <script>
@@ -72,8 +83,11 @@ export default {
       if (newVal == true) {
         var result = false;
         if (this.options.algoType == AlgoType.DFS) {
-          // console.log("DFS Called but none implemented :(");
           result = await this.dfs();
+          if (result) {
+            await this.sleep(200);
+            this.path.reverse();
+          }
         } else if (this.options.algoType == AlgoType.BFS) {
           result = await this.bfs();
         } else if (this.options.algoType == AlgoType.Djikstra) {
@@ -205,7 +219,7 @@ export default {
           this.board[r][c].cellType == CellType.PATH
         ) {
           this.board[r][c].cellType = CellType.FREE;
-          await this.sleep(0.001);
+          await this.sleep(0.000001);
         }
       }
       this.visited = [];
@@ -262,6 +276,10 @@ export default {
       while (queue.length > 0) {
         const [curRow, curCol] = queue.shift();
         for (const [adjRow, adjCol] of this.getAdjIndexes(curRow, curCol)) {
+          if (!this.didAlgoRun) {
+            await this.clearVisitedCells();
+            return false;
+          }
           // when you find the end node
           if (this.board[adjRow][adjCol].cellType == CellType.END) {
             // calculcate shortest path
@@ -334,7 +352,13 @@ export default {
     },
     async dfs() {
       const dfsHelper = async (curRow, curCol) => {
+        if (!this.didAlgoRun) {
+          return false;
+        }
         for (const [adjRow, adjCol] of this.getAdjIndexes(curRow, curCol)) {
+          if (!this.didAlgoRun) {
+            return false;
+          }
           if (this.board[adjRow][adjCol].cellType == CellType.END) return true;
           else if (this.board[adjRow][adjCol].cellType == CellType.FREE) {
             this.board[adjRow][adjCol].cellType = CellType.FILLED;
@@ -364,9 +388,25 @@ export default {
       )
         return;
       for (const [r, c] of this.path) {
+        if (!this.didAlgoRun) {
+          await this.clearPath();
+          return;
+        }
         this.board[r][c].cellType = CellType.PATH;
         await this.sleep(150);
       }
+    },
+    async clearPath() {
+      for (const [r, c] of this.path) {
+        if (
+          this.board[r][c].cellType == CellType.FILLED ||
+          this.board[r][c].cellType == CellType.PATH
+        ) {
+          this.board[r][c].cellType = CellType.FREE;
+          await this.sleep(0.000001);
+        }
+      }
+      this.path = [];
     },
   },
 };
@@ -380,10 +420,19 @@ export default {
   margin: 1.5em 1.5em 0em 1.5em;
 }
 
-.stats {
+#stats {
   margin-top: 0.5em;
-  text-align: end;
   color: rgb(255, 255, 255);
+  display: flex;
+  justify-content: space-between;
+}
+
+#hint-text {
+  text-align: start;
+  margin-left: 5em;
+}
+#stats-text {
+  text-align: end;
   margin-right: 5em;
 }
 

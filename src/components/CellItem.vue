@@ -63,6 +63,10 @@ export default {
 
 .cell-wall {
   background-color: black;
+  /* animation-name: transformDownAndUp;
+  animation-duration: 0.1ms;
+  animation-timing-function: ease-out;
+  animation-delay: 0;*/
 }
 
 .cell-filled {
@@ -80,6 +84,10 @@ export default {
 
 .cell-path {
   background-color: yellow;
+  animation-name: transformDownAndUp;
+  animation-duration: 0.1s;
+  animation-timing-function: ease-out;
+  animation-delay: 0;
 }
 
 .cell-start {
@@ -109,6 +117,20 @@ export default {
   100% {
     transform: scale(1);
     background-color: rgba(0, 190, 218, 0.75);
+  }
+}
+
+@keyframes transformDownAndUp {
+  0% {
+    transform: scale(0.7);
+  }
+
+  75% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }
 </style>
