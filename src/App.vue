@@ -8,6 +8,7 @@
       @toggleClearWalls="this.didClearWalls = !this.didClearWalls"
       @toggleClearPath="this.didClearPath = !this.didClearPath"
       :didAlgoRun="didAlgoRun"
+      :isPossibleToClear="isPossibleToClear"
       @clearPath="didAlgoRun = false"
     />
     <BoardItem
@@ -15,6 +16,8 @@
       :didAlgoRun="this.didAlgoRun"
       :didClearWalls="didClearWalls"
       :didClearPath="didClearPath"
+      @startedClearing="isPossibleToClear = false"
+      @endedClearing="isPossibleToClear = true"
     />
   </div>
 </template>
@@ -35,6 +38,7 @@ export default {
   data() {
     return {
       didAlgoRun: false,
+      isPossibleToClear: true,
       didClearWalls: false,
       didClearPath: false,
       options: {

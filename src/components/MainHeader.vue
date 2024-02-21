@@ -17,7 +17,13 @@
         :didAlgoRun="didAlgoRun"
         :propVals="['Slow', 'Normal', 'Fast']"
       />
-      <button v-if="didAlgoRun == false" @click="this.$emit('toggleAlgoRun')">
+      <button
+        v-if="didAlgoRun == false"
+        :class="this.isPossibleToClear == false ? 'disabled' : ''"
+        @click="
+          if (this.isPossibleToClear == true) this.$emit('toggleAlgoRun');
+        "
+      >
         Visualize
       </button>
       <button
@@ -44,7 +50,7 @@ import CustomDropDown from "./CustomDropDown.vue";
 export default {
   name: "MainHeader",
   components: { CustomDropDown },
-  props: ["didAlgoRun"],
+  props: ["didAlgoRun", "isPossibleToClear"],
   data() {
     return {};
   },
@@ -105,5 +111,10 @@ button:hover {
 .clear-btn:hover {
   background-color: rgb(228, 1, 1);
   border: 2px rgb(228, 1, 1) solid;
+}
+
+.disabled {
+  opacity: 30%;
+  transition: 0.5s;
 }
 </style>

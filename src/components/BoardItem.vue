@@ -17,9 +17,36 @@
         (this.metaData.cellTypeClicked == 0 ||
           this.metaData.cellTypeClicked == 1)
       " -->
-    <p id="hint-text">
-      * Click somewhere to place the
-      {{ this.metaData.cellTypeClicked == 0 ? "START" : "END" }} cell!
+    <p
+      id="hint-text"
+      v-if="
+        this.metaData.isMouseDown &&
+        (this.metaData.cellTypeClicked == 0 ||
+          this.metaData.cellTypeClicked == 1)
+      "
+    >
+      * Click somewhere on the board to place the
+      <span
+        :style="
+          this.metaData.cellTypeClicked == 0
+            ? { color: 'rgb(0, 255, 0)' }
+            : { color: 'red' }
+        "
+        >{{ this.metaData.cellTypeClicked == 0 ? "start" : "end" }}</span
+      >
+      cell *
+    </p>
+    <p
+      id="fyi-text"
+      v-if="
+        !(
+          this.metaData.isMouseDown &&
+          (this.metaData.cellTypeClicked == 0 ||
+            this.metaData.cellTypeClicked == 1)
+        )
+      "
+    >
+      Made with ❤️ by SainitinD
     </p>
     <p id="stats-text">
       No.of visited cells: {{ this.visited.length }} &nbsp; No.of path cells:
@@ -99,6 +126,9 @@ export default {
         if (result) {
           console.log("Tracing Shortest Path now!");
           await this.tracePath();
+        } else {
+          console.log("Path wasn't found :(");
+          // alert("Path wasn't found :(");
         }
       } else {
         await this.clearVisitedCells();
@@ -213,17 +243,19 @@ export default {
       }
     },
     async clearVisitedCells() {
+      this.$emit("startedClearing");
       for (const [r, c] of this.visited) {
         if (
           this.board[r][c].cellType == CellType.FILLED ||
           this.board[r][c].cellType == CellType.PATH
         ) {
           this.board[r][c].cellType = CellType.FREE;
-          await this.sleep(0.000001);
+          await this.sleep(0.0000000001);
         }
       }
       this.visited = [];
       this.path = [];
+      this.$emit("endedClearing");
     },
     sleep(milliseconds) {
       /**
@@ -277,7 +309,7 @@ export default {
         const [curRow, curCol] = queue.shift();
         for (const [adjRow, adjCol] of this.getAdjIndexes(curRow, curCol)) {
           if (!this.didAlgoRun) {
-            await this.clearVisitedCells();
+            // await this.clearVisitedCells();
             return false;
           }
           // when you find the end node
@@ -427,7 +459,7 @@ export default {
   justify-content: space-between;
 }
 
-#hint-text {
+#fyi-text {
   text-align: start;
   margin-left: 5em;
 }
@@ -439,5 +471,44 @@ export default {
 .row {
   /* display: grid; */
   display: flex;
+}
+
+#hint-text {
+  text-align: start;
+  margin-left: 5em;
+  animation: shake 8.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  animation-iteration-count: infinite;
+}
+
+@keyframes shake {
+  1%,
+  9% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  2%,
+  8% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  3%,
+  5%,
+  7% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  4%,
+  6% {
+    transform: translate3d(4px, 0, 0);
+  }
+  10% {
+    transform: translate3d(0px, 0, 0);
+  }
+  100% {
+    transform: translate3d(0px, 0, 0);
+  }
 }
 </style>
