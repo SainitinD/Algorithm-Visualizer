@@ -1,14 +1,16 @@
 <template>
-  <div id="board" v-if="this.board.length !== 0">
-    <div class="row" v-for="(row, rowIdx) in board" :key="rowIdx">
-      <CellItem
-        v-for="cellInfo in row"
-        :key="cellInfo.id"
-        :cellInfo="cellInfo"
-        @mousedown="this.handleMouseDown(cellInfo)"
-        @mouseenter="this.handleMouseEnter(cellInfo)"
-        @mouseup="this.handleMouseUp"
-      />
+  <div class="center">
+    <div id="board" v-if="this.board.length !== 0">
+      <div class="row" v-for="(row, rowIdx) in board" :key="rowIdx">
+        <CellItem
+          v-for="cellInfo in row"
+          :key="cellInfo.id"
+          :cellInfo="cellInfo"
+          @mousedown="this.handleMouseDown(cellInfo)"
+          @mouseenter="this.handleMouseEnter(cellInfo)"
+          @mouseup="this.handleMouseUp"
+        />
+      </div>
     </div>
   </div>
   <div id="stats">
@@ -57,6 +59,7 @@
 <script>
 import CellItem from "./CellItem.vue";
 import { AlgoType, CellType, WallType } from "@/helper/Enums";
+import { PriorityQueue } from "@datastructures-js/priority-queue";
 
 export default {
   name: "BoardItem",
@@ -118,7 +121,8 @@ export default {
         } else if (this.options.algoType == AlgoType.BFS) {
           result = await this.bfs();
         } else if (this.options.algoType == AlgoType.Djikstra) {
-          console.log("Djikstra Called but none implemented :(");
+          // console.log("Djikstra Called but none implemented :(");
+          result = await this.dijkstra();
         } else if (this.options.algoType == AlgoType.ASTAR) {
           console.log("A* Called but none implemented :(");
         }
@@ -408,6 +412,79 @@ export default {
         this.metaData.STARTCELL[1]
       );
     },
+    async dijkstra() {
+      const dijkstraHelper = async (curRow, curCol) => {
+        const distanceMap = this.createDistanceMap();
+        const predecessorMap = {};
+        predecessorMap[`${curRow},${curCol}`] = null;
+        const queue = new PriorityQueue((a, b) => {
+          if (a[0] <= b[0]) {
+            return -1; // don't swap
+          } else {
+            return 1; // swap
+          }
+        });
+
+        queue.enqueue([0, [curRow, curCol]]);
+        while (queue.size() > 0) {
+          const [curCost, [curRow, curCol]] = queue.dequeue();
+          if (curCost > distanceMap[curRow][curCol]) continue;
+          for (const [adjRow, adjCol] of this.getAdjIndexes(curRow, curCol)) {
+            if (!this.didAlgoRun) return false;
+            var adjCost = 1 + Number(curCost);
+            if (this.board[adjRow][adjCol].cellType == CellType.END) {
+              predecessorMap[`${adjRow},${adjCol}`] = [curRow, curCol];
+              this.traceDijkstraShortestPath(predecessorMap);
+              return true;
+            }
+            if (adjCost < distanceMap[adjRow][adjCol]) {
+              distanceMap[adjRow][adjCol] = adjCost;
+              predecessorMap[`${adjRow},${adjCol}`] = [curRow, curCol];
+              this.board[adjRow][adjCol].cellType = CellType.FILLED;
+              queue.enqueue([Number(adjCost), [adjRow, adjCol]]);
+              this.visited.push([adjRow, adjCol]);
+              await this.sleep(1);
+            }
+          }
+        }
+        return false;
+      };
+      return await dijkstraHelper(
+        this.metaData.STARTCELL[0],
+        this.metaData.STARTCELL[1]
+      );
+    },
+    traceDijkstraShortestPath(predecessorMap) {
+      this.path = [];
+      const [endRow, endCol] = this.metaData.ENDCELL;
+      var [preRow, preCol] = predecessorMap[`${endRow},${endCol}`];
+      for (let x = 0; x < Object.keys(predecessorMap).length; x++) {
+        if (
+          preRow == this.metaData.STARTCELL[0] &&
+          preCol == this.metaData.STARTCELL[1]
+        ) {
+          console.log(`FOUND THE START NODE at ${preRow},${preCol}`);
+        } else {
+          this.path.push([preRow, preCol]);
+          const [tempRow, tempCol] = predecessorMap[`${preRow},${preCol}`];
+          preRow = tempRow;
+          preCol = tempCol;
+        }
+      }
+    },
+    createDistanceMap() {
+      const result = [];
+      for (let r = 0; r < this.metaData.BOARDROWS; r++) {
+        const row = [];
+        for (let c = 0; c < this.metaData.BOARDCOLS; c++) {
+          row.push(Infinity);
+        }
+        result.push(row);
+      }
+      const [startRow, startCol] = this.metaData.STARTCELL;
+      result[startRow][startCol] = 0;
+      return result;
+    },
     async tracePath() {
       /**
        * Traces the shortest path from the information in 'path' data variable.
@@ -446,10 +523,20 @@ export default {
 <style>
 #board {
   display: grid;
+  display: inline-block;
   /* display: flex; */
   justify-content: center;
   cursor: default;
+  /* margin: 0 auto; */
   margin: 1.5em 1.5em 0em 1.5em;
+  box-sizing: content-box;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #stats {
