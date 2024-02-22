@@ -26,4 +26,10 @@ const CellType = {
   FILLEDNOANIM: 6,
 };
 
-export { SpeedType, WallType, AlgoType, CellType };
+const SpeedValue = {
+  SLOW: 10,
+  NORMAL: 1,
+  FAST: 0.01,
+};
+
+export { SpeedType, WallType, AlgoType, CellType, SpeedValue };

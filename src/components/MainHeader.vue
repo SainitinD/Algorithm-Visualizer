@@ -33,7 +33,11 @@
       >
         Clear
       </button>
-      <button @click="this.$emit('toggleClearWalls')" class="clear-btn">
+      <button
+        @click="if (this.didAlgoRun == false) this.$emit('toggleClearWalls');"
+        :class="this.didAlgoRun == true ? 'disabled' : ''"
+        class="clear-btn"
+      >
         Clear Walls
       </button>
       <!-- <button @click="this.$emit('toggleClearPath')" class="clear-btn">

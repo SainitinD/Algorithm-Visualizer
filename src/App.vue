@@ -7,9 +7,9 @@
       @toggleAlgoRun="this.didAlgoRun = !this.didAlgoRun"
       @toggleClearWalls="this.didClearWalls = !this.didClearWalls"
       @toggleClearPath="this.didClearPath = !this.didClearPath"
+      @clearPath="didAlgoRun = false"
       :didAlgoRun="didAlgoRun"
       :isPossibleToClear="isPossibleToClear"
-      @clearPath="didAlgoRun = false"
     />
     <BoardItem
       :options="this.options"

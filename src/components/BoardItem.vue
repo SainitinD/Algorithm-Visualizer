@@ -58,7 +58,14 @@
 </template>
 <script>
 import CellItem from "./CellItem.vue";
-import { AlgoType, CellType, WallType } from "@/helper/Enums";
+import {
+  AlgoType,
+  CellType,
+  SpeedType,
+  WallType,
+  SpeedValue,
+} from "@/helper/Enums";
+import { CLEARSPEED, PATHSPEED, DFSPATHDELAY } from "@/helper/Constants";
 import { PriorityQueue } from "@datastructures-js/priority-queue";
 
 export default {
@@ -78,6 +85,7 @@ export default {
         cellTypeClicked: null,
         lastClickedCell: null,
       },
+      curSpeed: SpeedValue.NORMAL,
       path: [],
       visited: [],
       board: [],
@@ -105,6 +113,17 @@ export default {
         this.createRandomMaze();
       }
     },
+    "options.speed": function (newVal, oldVal) {
+      if (newVal == oldVal) return;
+      if (newVal == SpeedType.SLOW) {
+        this.curSpeed = SpeedValue.SLOW;
+      } else if (newVal == SpeedType.NORMAL) {
+        this.curSpeed = SpeedValue.NORMAL;
+      } else if (newVal == SpeedType.FAST) {
+        this.curSpeed = SpeedValue.FAST;
+      }
+      console.log(`Changing speed type to ${this.curSpeed}`);
+    },
     didClearWalls: function () {
       console.log("Cleared all the walls");
       this.clearWalls();
@@ -115,7 +134,7 @@ export default {
         if (this.options.algoType == AlgoType.DFS) {
           result = await this.dfs();
           if (result) {
-            await this.sleep(200);
+            await this.sleep(DFSPATHDELAY);
             this.path.reverse();
           }
         } else if (this.options.algoType == AlgoType.BFS) {
@@ -171,7 +190,7 @@ export default {
           ) {
             if (Math.random() > 0.7) {
               this.board[r][c].cellType = CellType.WALL;
-              await this.sleep(1);
+              await this.sleep(this.curSpeed);
             }
           }
         }
@@ -251,7 +270,7 @@ export default {
         for (let c = 0; c < this.metaData.BOARDCOLS; c++) {
           if (this.board[r][c].cellType != CellType.WALL) continue;
           this.board[r][c].cellType = CellType.FREE;
-          // this.sleep(0.01);
+          // await this.sleep(CLEARSPEED);
         }
       }
     },
@@ -266,7 +285,7 @@ export default {
           this.board[r][c].cellType == CellType.PATH
         ) {
           this.board[r][c].cellType = CellType.FREE;
-          await this.sleep(0.0000000001);
+          await this.sleep(CLEARSPEED);
         }
       }
       this.visited = [];
@@ -351,7 +370,8 @@ export default {
 
             // data variable tracking
             this.visited.push([adjRow, adjCol]);
-            await this.sleep(1);
+            console.log(this.curSpeed);
+            await this.sleep(this.curSpeed);
           }
         }
       }
@@ -375,8 +395,6 @@ export default {
           curVal = curIdx;
           this.path.push(curIdx);
           const [r, c] = curVal;
-          // this.board[r][c].cellType = CellType.PATH;
-          // await this.sleep(150);
           console.log(`Starting Path from end cell at [${r}, ${c}]`);
         } else if (curVal[0] == adjIdx[0] && curVal[1] == adjIdx[1]) {
           curVal = curIdx;
@@ -388,8 +406,6 @@ export default {
             console.log(`Found start cell at [${r}, ${c}]`);
             return;
           } else {
-            // this.board[r][c].cellType = CellType.PATH;
-            // await this.sleep(150);
             this.path.push(curIdx);
             console.log(
               `Going from [${adjIdx[0]}, ${adjIdx[1]}] to [${r}, ${c}]`
@@ -420,7 +436,7 @@ export default {
             this.board[adjRow][adjCol].cellType = CellType.FILLED;
             this.visited.push([adjRow, adjCol]);
             this.path.push([adjRow, adjCol]);
-            await this.sleep(1);
+            await this.sleep(this.curSpeed);
             if ((await dfsHelper(adjRow, adjCol)) == true) return true;
             this.path.pop();
           }
@@ -471,7 +487,7 @@ export default {
               this.board[adjRow][adjCol].cellType = CellType.FILLED;
               queue.enqueue([Number(adjCost), [adjRow, adjCol]]);
               this.visited.push([adjRow, adjCol]);
-              await this.sleep(1);
+              await this.sleep(this.curSpeed);
             }
           }
         }
@@ -537,7 +553,7 @@ export default {
           return;
         }
         this.board[r][c].cellType = CellType.PATH;
-        await this.sleep(150);
+        await this.sleep(PATHSPEED);
       }
     },
     async clearPath() {
@@ -550,7 +566,7 @@ export default {
           this.board[r][c].cellType == CellType.PATH
         ) {
           this.board[r][c].cellType = CellType.FREE;
-          await this.sleep(0.000001);
+          await this.sleep(CLEARSPEED);
         }
       }
       this.path = [];
