@@ -100,13 +100,19 @@ export default {
   mounted: function () {
     // Setup
     let windowWidth = window.innerWidth;
-    if (DEBUG) console.log(`Window has a width of ${windowWidth}px`);
+    let windowHeight = window.innerHeight;
+    if (DEBUG)
+      console.log(
+        `Window has a width of ${windowWidth}px and ${windowHeight}px`
+      );
     this.metaData.BOARDCOLS = Math.round((windowWidth - 180) / 30);
+    this.metaData.BOARDROWS = Math.round((windowHeight - 270) / 30);
     this.board = this.createBoard();
-    const [startRow, startCol] = this.metaData.STARTCELL;
-    const [endRow, endCol] = this.metaData.ENDCELL;
-    this.board[startRow][startCol].cellType = CellType.START;
-    this.board[endRow][endCol].cellType = CellType.END;
+    this.setStartAndEndCells();
+    if (DEBUG)
+      console.log(
+        `Selected ${this.metaData.BOARDROWS} rows and ${this.metaData.BOARDCOLS} cols`
+      );
   },
   watch: {
     "metaData.lastClickedCell": async function (newVal, oldVal) {
@@ -190,6 +196,29 @@ export default {
         board.push(row);
       }
       return board;
+    },
+    setStartAndEndCells() {
+      /**
+       * Randomly chooses two available cells as the start and end cell on the board
+       */
+      var randStartRow = Math.floor(Math.random() * this.metaData.BOARDROWS);
+      var randStartCol = Math.floor(Math.random() * this.metaData.BOARDCOLS);
+      var randEndRow = Math.floor(Math.random() * this.metaData.BOARDROWS);
+      var randEndCol = Math.floor(Math.random() * this.metaData.BOARDCOLS);
+      while (randStartRow == randEndRow && randStartCol == randEndCol) {
+        if (randStartRow == randEndRow)
+          randEndRow = Math.floor(Math.random() * this.metaData.BOARDROWS);
+        if (randStartCol == randEndCol)
+          randEndCol = Math.floor(Math.random() * this.metaData.BOARDCOLS);
+      }
+      this.metaData.STARTCELL = [randStartRow, randStartCol];
+      this.metaData.ENDCELL = [randEndRow, randEndCol];
+      this.board[randStartRow][randStartCol].cellType = CellType.START;
+      this.board[randEndRow][randEndCol].cellType = CellType.END;
+      if (DEBUG)
+        console.log(
+          `Selected Start Cell is at ${randStartRow},${randStartCol}) and selected end cell is at (${randEndRow},${randEndCol}).`
+        );
     },
     async createRandomMaze() {
       /**
