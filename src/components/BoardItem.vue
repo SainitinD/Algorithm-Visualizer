@@ -1,6 +1,10 @@
 <template>
   <div class="centered">
-    <div id="board" v-if="this.board.length !== 0">
+    <div
+      id="board"
+      v-if="this.board.length !== 0"
+      @mouseleave="this.handleMouseUp"
+    >
       <div class="row" v-for="(row, rowIdx) in board" :key="rowIdx">
         <CellItem
           v-for="cellInfo in row"
@@ -48,7 +52,8 @@
         )
       "
     >
-      Made with ❤️ by SainitinD
+      Mouse Status: {{ this.metaData.isMouseDown ? "DOWN" : "UP" }} | Made with
+      ❤️ by SainitinD
     </p>
     <p id="stats-text">
       No.of visited cells: {{ this.visited.length }} &nbsp; No.of path cells:
@@ -104,9 +109,13 @@ export default {
     this.board[endRow][endCol].cellType = CellType.END;
   },
   watch: {
-    "metaData.lastClickedCell": function (newVal, oldVal) {
+    "metaData.lastClickedCell": async function (newVal, oldVal) {
       if (oldVal == null) return;
-      if (newVal.cellType != oldVal.cellType) return;
+      if (
+        newVal.cellType != oldVal.cellType ||
+        oldVal.cellType == CellType.WALL
+      )
+        return;
       oldVal.cellType = CellType.FREE;
     },
     "options.wallType": function (newVal, oldVal) {
@@ -205,6 +214,21 @@ export default {
       this.metaData.isMouseDown = true;
       this.metaData.cellTypeClicked = cellInfo.cellType;
       this.metaData.lastClickedCell = cellInfo;
+
+      if (
+        cellInfo.cellType != CellType.START &&
+        cellInfo.cellType != CellType.END
+      ) {
+        // draw/remove wall if its requested on a valid cell
+        if (cellInfo.cellType == CellType.WALL) {
+          cellInfo.cellType = CellType.FREE;
+        } else {
+          cellInfo.cellType = CellType.WALL;
+        }
+      } else {
+        // debugging
+        if (DEBUG) console.log("Nothing Here!");
+      }
 
       // debugging
       if (DEBUG) console.log("Mouse Down");

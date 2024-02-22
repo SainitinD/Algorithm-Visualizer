@@ -49,6 +49,11 @@ export default {
 .cell {
   width: 30px;
   height: 30px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   /* margin: 5px; */
   border: 0.5px solid rgba(255, 255, 255, 0.65);
 }
