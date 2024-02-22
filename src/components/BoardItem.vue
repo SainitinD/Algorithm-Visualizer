@@ -142,6 +142,9 @@ export default {
   // mixins: [bfs],
   methods: {
     createBoard() {
+      /**
+       * Helper method to initialize the board
+       */
       const board = [];
       for (let r = 0; r < this.metaData.BOARDROWS; r++) {
         let row = [];
@@ -157,6 +160,9 @@ export default {
       return board;
     },
     async createRandomMaze() {
+      /**
+       * Randomly assigns a free cell as a wall. Currently the chance of making a cell into a wall is 0.7
+       */
       for (let r = 0; r < this.metaData.BOARDROWS; r++) {
         for (let c = 0; c < this.metaData.BOARDCOLS; c++) {
           if (
@@ -238,6 +244,9 @@ export default {
       console.log("Mouse Up");
     },
     clearWalls() {
+      /**
+       * Clears the walls and changes them into free cells
+       */
       for (let r = 0; r < this.metaData.BOARDROWS; r++) {
         for (let c = 0; c < this.metaData.BOARDCOLS; c++) {
           if (this.board[r][c].cellType != CellType.WALL) continue;
@@ -247,6 +256,9 @@ export default {
       }
     },
     async clearVisitedCells() {
+      /**
+       * Goes through all of the visited cells and frees them.
+       */
       this.$emit("startedClearing");
       for (const [r, c] of this.visited) {
         if (
@@ -387,7 +399,15 @@ export default {
       }
     },
     async dfs() {
+      /**
+       * Performs th dfs search and returns the shortest path from the start cell to the end cell.
+       */
       const dfsHelper = async (curRow, curCol) => {
+        /**
+         * Helper method to perform recursive dfs
+         * @param {number} curRow the row index
+         * @param {number} curCol the column index
+         */
         if (!this.didAlgoRun) {
           return false;
         }
@@ -413,10 +433,18 @@ export default {
       );
     },
     async dijkstra() {
-      const dijkstraHelper = async (curRow, curCol) => {
+      /**
+       * Performs the dijkstra's algorithm and finds the shortest path from start cell to end cell.
+       */
+      const dijkstraHelper = async (startRow, startCol) => {
+        /**
+         * Helper method for running dijkstra's algorithm. Performs the search and figures out the shortest path from start to end.
+         * @param {number} startRow The row index of the start cell
+         * @param {number} startCol The column index of the start cell
+         */
         const distanceMap = this.createDistanceMap();
         const predecessorMap = {};
-        predecessorMap[`${curRow},${curCol}`] = null;
+        predecessorMap[`${startRow},${startCol}`] = null;
         const queue = new PriorityQueue((a, b) => {
           if (a[0] <= b[0]) {
             return -1; // don't swap
@@ -425,7 +453,7 @@ export default {
           }
         });
 
-        queue.enqueue([0, [curRow, curCol]]);
+        queue.enqueue([0, [startRow, startCol]]);
         while (queue.size() > 0) {
           const [curCost, [curRow, curCol]] = queue.dequeue();
           if (curCost > distanceMap[curRow][curCol]) continue;
@@ -455,6 +483,10 @@ export default {
       );
     },
     traceDijkstraShortestPath(predecessorMap) {
+      /**
+       * Helper method to get the row and column indices of the shortest path found from a dijkstra's search.
+       * @param {Object} predecessorMap An Object containing a cell and its predecessor recorded in the djikstra search
+       */
       this.path = [];
       const [endRow, endCol] = this.metaData.ENDCELL;
       var [preRow, preCol] = predecessorMap[`${endRow},${endCol}`];
@@ -473,6 +505,9 @@ export default {
       }
     },
     createDistanceMap() {
+      /**
+       * helper method to create the distance map for the dijkstra algorithm
+       */
       const result = [];
       for (let r = 0; r < this.metaData.BOARDROWS; r++) {
         const row = [];
@@ -506,6 +541,9 @@ export default {
       }
     },
     async clearPath() {
+      /**
+       * Clears the drawn path and changes all the path cells back to free cells
+       */
       for (const [r, c] of this.path) {
         if (
           this.board[r][c].cellType == CellType.FILLED ||
