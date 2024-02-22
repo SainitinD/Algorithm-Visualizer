@@ -3,6 +3,7 @@ const webpack = require("webpack");
 
 module.exports = defineConfig({
   transpileDependencies: true,
+  publicPath: process.env.NODE_ENV === "production" ? "/REPO_NAME/" : "/",
   configureWebpack: {
     plugins: [
       new webpack.DefinePlugin({
