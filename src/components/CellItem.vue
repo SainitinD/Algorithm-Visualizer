@@ -50,7 +50,7 @@ export default {
   width: 30px;
   height: 30px;
   /* margin: 5px; */
-  border: 1px solid grey;
+  border: 0.5px solid rgba(255, 255, 255, 0.65);
 }
 
 .cell:hover {
@@ -63,23 +63,20 @@ export default {
 
 .cell-wall {
   background-color: black;
-  /* animation-name: transformDownAndUp;
-  animation-duration: 0.1ms;
+  animation-name: transformDownAndUp;
+  animation-delay: 1ms;
+  animation-duration: 0.31s;
   animation-timing-function: ease-out;
-  animation-delay: 0;*/
+  animation-iteration-count: 1;
+  /* border: 1px solid rgb(175, 248, 247); */
 }
 
 .cell-filled {
   /* background-color: blue; */
   border: 1px solid rgb(175, 216, 248);
-  animation-name: visitedAnimation;
+  animation-name: filledAnimation;
   animation-duration: 1.5s;
-  animation-timing-function: ease-out;
-  animation-delay: 0;
-  animation-direction: alternate;
-  animation-iteration-count: 1;
   animation-fill-mode: forwards;
-  animation-play-state: running;
 }
 
 .cell-path {
@@ -87,26 +84,34 @@ export default {
   animation-name: transformDownAndUp;
   animation-duration: 0.1s;
   animation-timing-function: ease-out;
-  animation-delay: 0;
 }
 
 .cell-start {
   background-color: rgb(0, 255, 0);
+  animation-name: transformDownAndUp;
+  animation-duration: 1s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: 1;
 }
 
 .cell-end {
   background-color: rgb(255, 0, 0);
+  animation-name: transformDownAndUp;
+  animation-duration: 1s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: 1;
 }
 
-@keyframes visitedAnimation {
+@keyframes filledAnimation {
   0% {
     transform: scale(0.3);
     background-color: rgba(0, 0, 66, 0.75);
-    border-radius: 100%;
+    opacity: 30%;
   }
 
   50% {
     background-color: rgba(17, 104, 217, 0.75);
+    opacity: 100%;
   }
 
   75% {
