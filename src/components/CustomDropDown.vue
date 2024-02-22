@@ -32,13 +32,18 @@
 <script>
 export default {
   name: "CustomDropDown",
-  props: ["propVals", "didAlgoRun"],
+  props: ["propVals", "didAlgoRun", "defaultIndex"],
   data() {
     return {
       dropdownOpen: false,
       vals: this.propVals,
       selectedVal: 0,
     };
+  },
+  mounted: function () {
+    if (this.defaultIndex) {
+      this.selectedVal = this.defaultIndex;
+    }
   },
   methods: {
     handleDropdown() {

@@ -6,16 +6,19 @@
         @changeOptions="changeAlgoOptions"
         :didAlgoRun="didAlgoRun"
         :propVals="ALGOVALUES"
+        :defaultIndex="0"
       />
       <CustomDropDown
         @changeOptions="changeWallOptions"
         :didAlgoRun="didAlgoRun"
         :propVals="MAZEVALUES"
+        :defaultIndex="0"
       />
       <CustomDropDown
         @changeOptions="changeSpeedOptions"
         :didAlgoRun="didAlgoRun"
         :propVals="SPEEDVALUES"
+        :defaultIndex="2"
       />
       <button
         v-if="didAlgoRun == false"
