@@ -74,6 +74,7 @@ export default {
   components: {
     CellItem,
   },
+  emits: ["startedClearing", "endedClearing"],
   data() {
     return {
       metaData: {

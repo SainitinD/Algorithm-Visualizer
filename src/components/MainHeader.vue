@@ -50,6 +50,15 @@ import { ALGOVALUES, MAZEVALUES, SPEEDVALUES } from "@/helper/Constants";
 export default {
   name: "MainHeader",
   components: { CustomDropDown },
+  emits: [
+    "changeAlgoOptions",
+    "changeWallOptions",
+    "changeSpeedOptions",
+    "toggleAlgoRun",
+    "toggleClearWalls",
+    "clearPath",
+    "toggleClearPath",
+  ],
   props: ["didAlgoRun", "isPossibleToClear"],
   data() {
     return {
