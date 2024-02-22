@@ -13,7 +13,6 @@ const AlgoType = {
   DFS: 0,
   BFS: 1,
   Djikstra: 2,
-  ASTAR: 3,
 };
 
 const CellType = {

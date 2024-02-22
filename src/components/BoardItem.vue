@@ -1,5 +1,5 @@
 <template>
-  <div class="center">
+  <div class="centered">
     <div id="board" v-if="this.board.length !== 0">
       <div class="row" v-for="(row, rowIdx) in board" :key="rowIdx">
         <CellItem
@@ -65,7 +65,7 @@ import {
   WallType,
   SpeedValue,
 } from "@/helper/Enums";
-import { CLEARSPEED, PATHSPEED, DFSPATHDELAY } from "@/helper/Constants";
+import { CLEARSPEED, PATHSPEED, DFSPATHDELAY, DEBUG } from "@/helper/Constants";
 import { PriorityQueue } from "@datastructures-js/priority-queue";
 
 export default {
@@ -93,6 +93,9 @@ export default {
   },
   mounted: function () {
     // Setup
+    let windowWidth = window.innerWidth;
+    if (DEBUG) console.log(`Window has a width of ${windowWidth}px`);
+    this.metaData.BOARDCOLS = Math.round((windowWidth - 180) / 30);
     this.board = this.createBoard();
     const [startRow, startCol] = this.metaData.STARTCELL;
     const [endRow, endCol] = this.metaData.ENDCELL;
@@ -122,10 +125,10 @@ export default {
       } else if (newVal == SpeedType.FAST) {
         this.curSpeed = SpeedValue.FAST;
       }
-      console.log(`Changing speed type to ${this.curSpeed}`);
+      if (DEBUG) console.log(`Changing speed type to ${this.curSpeed}`);
     },
     didClearWalls: function () {
-      console.log("Cleared all the walls");
+      if (DEBUG) console.log("Cleared all the walls");
       this.clearWalls();
     },
     didAlgoRun: async function (newVal) {
@@ -140,17 +143,17 @@ export default {
         } else if (this.options.algoType == AlgoType.BFS) {
           result = await this.bfs();
         } else if (this.options.algoType == AlgoType.Djikstra) {
-          // console.log("Djikstra Called but none implemented :(");
+          // if (DEBUG) console.log("Djikstra Called but none implemented :(");
           result = await this.dijkstra();
         } else if (this.options.algoType == AlgoType.ASTAR) {
-          console.log("A* Called but none implemented :(");
+          if (DEBUG) console.log("A* Called but none implemented :(");
         }
 
         if (result) {
-          console.log("Tracing Shortest Path now!");
+          if (DEBUG) console.log("Tracing Shortest Path now!");
           await this.tracePath();
         } else {
-          console.log("Path wasn't found :(");
+          if (DEBUG) console.log("Path wasn't found :(");
           // alert("Path wasn't found :(");
         }
       } else {
@@ -203,10 +206,10 @@ export default {
       this.metaData.lastClickedCell = cellInfo;
 
       // debugging
-      console.log("Mouse Down");
+      if (DEBUG) console.log("Mouse Down");
     },
     async handleMouseEnter(cellInfo) {
-      if (!this.metaData.isMouseDown) return;
+      if (!this.metaData.isMouseDown || this.didAlgoRun) return;
 
       if (
         this.metaData.cellTypeClicked == CellType.START &&
@@ -218,7 +221,8 @@ export default {
         this.metaData.STARTCELL = [cellInfo.row, cellInfo.col];
 
         // debugging
-        console.log(`Start Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
+        if (DEBUG)
+          console.log(`Start Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
 
         // if (this.didAlgoRun) {
         //   await this.clearBoard();
@@ -234,7 +238,8 @@ export default {
         this.metaData.ENDCELL = [cellInfo.row, cellInfo.col];
 
         // debugging
-        console.log(`End Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
+        if (DEBUG)
+          console.log(`End Cell changed to ${cellInfo.row}, ${cellInfo.col}`);
 
         // if (this.didAlgoRun) {
         //   await this.clearBoard();
@@ -252,7 +257,7 @@ export default {
         }
       } else {
         // debugging
-        console.log("Nothing Here!");
+        if (DEBUG) console.log("Nothing Here!");
       }
     },
     handleMouseUp() {
@@ -260,7 +265,7 @@ export default {
       this.metaData.isMouseDown = false;
 
       // debugging
-      console.log("Mouse Up");
+      if (DEBUG) console.log("Mouse Up");
     },
     clearWalls() {
       /**
@@ -337,7 +342,7 @@ export default {
       this.visited = [];
       const bfsHistory = [];
       const queue = [[this.metaData.STARTCELL[0], this.metaData.STARTCELL[1]]];
-      console.log(queue);
+      if (DEBUG) console.log(queue);
 
       // bf search
       while (queue.length > 0) {
@@ -370,7 +375,7 @@ export default {
 
             // data variable tracking
             this.visited.push([adjRow, adjCol]);
-            console.log(this.curSpeed);
+            if (DEBUG) console.log(this.curSpeed);
             await this.sleep(this.curSpeed);
           }
         }
@@ -395,7 +400,7 @@ export default {
           curVal = curIdx;
           this.path.push(curIdx);
           const [r, c] = curVal;
-          console.log(`Starting Path from end cell at [${r}, ${c}]`);
+          if (DEBUG) console.log(`Starting Path from end cell at [${r}, ${c}]`);
         } else if (curVal[0] == adjIdx[0] && curVal[1] == adjIdx[1]) {
           curVal = curIdx;
           const [r, c] = curVal;
@@ -403,13 +408,14 @@ export default {
             r == this.metaData.STARTCELL[0] &&
             c == this.metaData.STARTCELL[1]
           ) {
-            console.log(`Found start cell at [${r}, ${c}]`);
+            if (DEBUG) console.log(`Found start cell at [${r}, ${c}]`);
             return;
           } else {
             this.path.push(curIdx);
-            console.log(
-              `Going from [${adjIdx[0]}, ${adjIdx[1]}] to [${r}, ${c}]`
-            );
+            if (DEBUG)
+              console.log(
+                `Going from [${adjIdx[0]}, ${adjIdx[1]}] to [${r}, ${c}]`
+              );
           }
         }
       }
@@ -511,7 +517,9 @@ export default {
           preRow == this.metaData.STARTCELL[0] &&
           preCol == this.metaData.STARTCELL[1]
         ) {
-          console.log(`FOUND THE START NODE at ${preRow},${preCol}`);
+          if (DEBUG)
+            if (DEBUG)
+              console.log(`FOUND THE START NODE at ${preRow},${preCol}`);
         } else {
           this.path.push([preRow, preCol]);
           const [tempRow, tempCol] = predecessorMap[`${preRow},${preCol}`];
@@ -566,7 +574,7 @@ export default {
           this.board[r][c].cellType == CellType.PATH
         ) {
           this.board[r][c].cellType = CellType.FREE;
-          await this.sleep(CLEARSPEED);
+          // await this.sleep(CLEARSPEED);
         }
       }
       this.path = [];
@@ -585,12 +593,6 @@ export default {
   margin: 1.5em 1.5em 0em 1.5em;
   box-sizing: content-box;
   border: 2px solid rgba(255, 255, 255, 0.75);
-}
-
-.center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 #stats {

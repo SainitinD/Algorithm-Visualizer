@@ -68,7 +68,7 @@ export default {
   animation-duration: 0.31s;
   animation-timing-function: ease-out;
   animation-iteration-count: 1;
-  /* border: 1px solid rgb(175, 248, 247); */
+  border: 1px solid rgb(182, 255, 254);
 }
 
 .cell-filled {

@@ -1,21 +1,21 @@
 <template>
   <header>
-    <div class="title">Algorithm Visualizer</div>
+    <div class="title centered">Algorithm Visualizer</div>
     <div class="header-row">
       <CustomDropDown
         @changeOptions="changeAlgoOptions"
         :didAlgoRun="didAlgoRun"
-        :propVals="['DFS', 'BFS', 'Dijkstra', 'A*']"
+        :propVals="ALGOVALUES"
       />
       <CustomDropDown
         @changeOptions="changeWallOptions"
         :didAlgoRun="didAlgoRun"
-        :propVals="['No Maze', 'Random Maze']"
+        :propVals="MAZEVALUES"
       />
       <CustomDropDown
         @changeOptions="changeSpeedOptions"
         :didAlgoRun="didAlgoRun"
-        :propVals="['Slow', 'Normal', 'Fast']"
+        :propVals="SPEEDVALUES"
       />
       <button
         v-if="didAlgoRun == false"
@@ -40,23 +40,23 @@
       >
         Clear Walls
       </button>
-      <!-- <button @click="this.$emit('toggleClearPath')" class="clear-btn">
-        Clear Path
-      </button> -->
     </div>
   </header>
 </template>
 <script>
 import CustomDropDown from "./CustomDropDown.vue";
-
-// Algo Type, Wall Type, Speed Type, Visualize, Clear Walls, Clear Path
+import { ALGOVALUES, MAZEVALUES, SPEEDVALUES } from "@/helper/Constants";
 
 export default {
   name: "MainHeader",
   components: { CustomDropDown },
   props: ["didAlgoRun", "isPossibleToClear"],
   data() {
-    return {};
+    return {
+      ALGOVALUES: ALGOVALUES,
+      MAZEVALUES: MAZEVALUES,
+      SPEEDVALUES: SPEEDVALUES,
+    };
   },
   methods: {
     changeAlgoOptions: function (newVal) {

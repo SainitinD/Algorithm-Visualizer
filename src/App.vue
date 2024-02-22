@@ -25,7 +25,8 @@
 <script>
 import MainHeader from "./components/MainHeader.vue";
 import BoardItem from "./components/BoardItem.vue";
-import { AlgoType, SpeedType, WallType } from "./helper/Enums";
+import { AlgoType, SpeedType, WallType } from "@/helper/Enums";
+import { DEBUG } from "@/helper/Constants";
 
 // path, visited, board,
 
@@ -50,21 +51,24 @@ export default {
   },
   methods: {
     changeAlgoOptions: function (newVal) {
-      console.log(
-        `Changed algo type to ${this._getNameFromType("Algo", newVal)}`
-      );
+      if (DEBUG)
+        console.log(
+          `Changed algo type to ${this._getNameFromType("Algo", newVal)}`
+        );
       this.options.algoType = newVal;
     },
     changeWallOptions: function (newVal) {
-      console.log(
-        `Changed wall type to ${this._getNameFromType("Wall", newVal)}`
-      );
+      if (DEBUG)
+        console.log(
+          `Changed wall type to ${this._getNameFromType("Wall", newVal)}`
+        );
       this.options.wallType = newVal;
     },
     changeSpeedOptions: function (newVal) {
-      console.log(
-        `Changed speed type to ${this._getNameFromType("Speed", newVal)}`
-      );
+      if (DEBUG)
+        console.log(
+          `Changed speed type to ${this._getNameFromType("Speed", newVal)}`
+        );
       this.options.speed = newVal;
     },
     _getNameFromType(type, val) {
@@ -113,5 +117,11 @@ body {
   /* display: grid; */
   gap: 0px;
   cursor: default;
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
