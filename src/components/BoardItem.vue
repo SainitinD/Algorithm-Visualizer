@@ -105,8 +105,14 @@ export default {
       console.log(
         `Window has a width of ${windowWidth}px and ${windowHeight}px`
       );
-    this.metaData.BOARDCOLS = Math.round((windowWidth - 180) / 30);
-    this.metaData.BOARDROWS = Math.round((windowHeight - 270) / 30);
+    this.metaData.BOARDCOLS = Math.max(Math.round((windowWidth - 180) / 30), 5);
+    this.metaData.BOARDROWS = Math.max(
+      Math.round((windowHeight - 270) / 30),
+      5
+    );
+
+    // adjustment for smaller screens
+    if (windowWidth < 1000) this.metaData.BOARDROWS -= 1;
     this.board = this.createBoard();
     this.setStartAndEndCells();
     if (DEBUG)
@@ -159,10 +165,7 @@ export default {
         } else if (this.options.algoType == AlgoType.BFS) {
           result = await this.bfs();
         } else if (this.options.algoType == AlgoType.Djikstra) {
-          // if (DEBUG) console.log("Djikstra Called but none implemented :(");
           result = await this.dijkstra();
-        } else if (this.options.algoType == AlgoType.ASTAR) {
-          if (DEBUG) console.log("A* Called but none implemented :(");
         }
 
         if (result) {
