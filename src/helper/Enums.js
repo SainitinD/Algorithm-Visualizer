@@ -26,9 +26,9 @@ const CellType = {
 };
 
 const SpeedValue = {
-  SLOW: 10,
-  NORMAL: 1,
-  FAST: 0.01,
+  SLOW: 100,
+  NORMAL: 10,
+  FAST: 1,
 };
 
 export { SpeedType, WallType, AlgoType, CellType, SpeedValue };
