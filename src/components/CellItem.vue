@@ -133,6 +133,7 @@ export default {
 @keyframes transformDownAndUp {
   0% {
     transform: scale(0.7);
+    border: 1px solid rgb(182, 255, 254);
   }
 
   75% {

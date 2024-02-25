@@ -107,6 +107,7 @@ export default {
   margin: 0px;
   padding: 0px;
   font-family: Helvetica, sans-serif;
+  box-sizing: border-box;
 }
 
 body {
@@ -115,7 +116,7 @@ body {
 
 #board {
   /* display: grid; */
-  gap: 0px;
+  /* gap: 0px; */
   cursor: default;
 }
 
