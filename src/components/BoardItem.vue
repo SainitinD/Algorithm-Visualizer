@@ -112,7 +112,13 @@ export default {
     );
 
     // adjustment for smaller screens
-    if (windowWidth < 1000) this.metaData.BOARDROWS -= 1;
+    if (windowWidth < 493) {
+      this.metaData.BOARDROWS -= 5;
+    } else if (windowWidth < 576) {
+      this.metaData.BOARDROWS -= 3;
+    } else if (windowWidth < 1000) {
+      this.metaData.BOARDROWS -= 1;
+    }
     this.board = this.createBoard();
     this.setStartAndEndCells();
     if (DEBUG)
@@ -243,6 +249,7 @@ export default {
     },
     handleMouseDown(cellInfo) {
       // record details on the cell clicked
+      if (this.didAlgoRun) return;
       this.metaData.isMouseDown = true;
       this.metaData.cellTypeClicked = cellInfo.cellType;
       this.metaData.lastClickedCell = cellInfo;
@@ -641,12 +648,9 @@ export default {
 </script>
 <style>
 #board {
-  display: grid;
   display: inline-block;
-  /* display: flex; */
   justify-content: center;
   cursor: default;
-  /* margin: 0 auto; */
   margin: 1.5em 1.5em 0em 1.5em;
   box-sizing: content-box;
   border: 2px solid rgba(255, 255, 255, 0.75);
